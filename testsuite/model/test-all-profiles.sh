@@ -15,7 +15,8 @@ for I in `perl -ne 'print "$1\n" if (m,<id>([^<]+)</id>,)' pom.xml`; do
     echo "========"
     echo "======== Profile $I"
     echo "========"
-    mvn -B test "-P$I" "$@" -Dtest="org.keycloak.testsuite.model.session.OfflineSessionPersistenceTest"
+    mvn -B test "-P$I" "$@"
+    # -Dtest="org.keycloak.testsuite.model.session.OfflineSessionPersistenceTest"
     EXIT_CODE=$[$EXIT_CODE + $?]
 
     if [ "$EXIT_CODE" == "0" ]; then
