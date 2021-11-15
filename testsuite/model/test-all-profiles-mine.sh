@@ -17,10 +17,6 @@ for I in `perl -ne 'print "$1\n" if (m,<id>([^<]+)</id>,)' pom.xml`; do
     echo "========"
     mvn -B test "-P$I" "$@" -Dtest="org.keycloak.testsuite.model.session.OfflineSessionPersistenceTest"
     EXIT_CODE=$[$EXIT_CODE + $?]
-
-    if [ "$EXIT_CODE" != "0" ]
-        exit 1
-    fi
     mv target/surefire-reports "target/surefire-reports-$I"
 done
 
