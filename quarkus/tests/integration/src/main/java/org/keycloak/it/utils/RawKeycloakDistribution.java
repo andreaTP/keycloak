@@ -254,14 +254,6 @@ public final class RawKeycloakDistribution implements KeycloakDistribution {
         try {
             Path distRootPath = Paths.get(System.getProperty("java.io.tmpdir")).resolve("kc-tests");
             File distFile = new File("../../../distribution/server-x-dist/target/keycloak.x-" + Version.VERSION_KEYCLOAK + ".zip");
-//            File distFile = Maven.resolveArtifact("org.keycloak", "keycloak-server-x-dist", "zip")
-//                    .map(Artifact::getFile)
-//                    .orElseThrow(new Supplier<RuntimeException>() {
-//                        @Override
-//                        public RuntimeException get() {
-//                            return new RuntimeException("Could not obtain distribution artifact");
-//                        }
-//                    });
             distRootPath.toFile().mkdirs();
             String distDirName = distFile.getName().replace("keycloak-server-x-dist", "keycloak.x");
             Path distPath = distRootPath.resolve(distDirName.substring(0, distDirName.lastIndexOf('.')));
