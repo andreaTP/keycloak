@@ -34,7 +34,7 @@ public final class Maven {
 
     private static Path resolveProjectDir() {
         try {
-            String classFilePath = KeycloakDistribution.class.getName().replace(".", "/") + ".class";
+            String classFilePath = Maven.class.getName().replace(".", "/") + ".class";
             URL classFileResource = Thread.currentThread().getContextClassLoader().getResource(classFilePath);
             String classPath = classFileResource.getPath();
             classPath = classPath.substring(0, classPath.length() - classFilePath.length());
