@@ -2,6 +2,7 @@ package org.keycloak.it.utils;
 
 import org.eclipse.aether.artifact.Artifact;
 import org.jboss.logging.Logger;
+import org.keycloak.common.Version;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.ToStringConsumer;
@@ -27,15 +28,7 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
     private List<String> stderr = List.of();
     private ToStringConsumer backupConsumer = new ToStringConsumer();
 
-    private File distributionFile = Maven
-        .resolveArtifact("org.keycloak", "keycloak-server-x-dist", "tar.gz")
-        .map(Artifact::getFile)
-                    .orElseThrow(new Supplier<RuntimeException>() {
-            @Override
-            public RuntimeException get() {
-                return new RuntimeException("Could not obtain distribution artifact");
-            }
-        });
+    private File distributionFile = new File("../../../distribution/server-x-dist/target/keycloak.x-" + Version.VERSION_KEYCLOAK + ".tar.gz");
 
     private GenericContainer keycloakContainer = null;
 
@@ -73,6 +66,8 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
                     .withLogConsumer(backupConsumer)
                     .withCommand(arguments.toArray(new String[0]))
                     .start();
+            
+            io.restassured.RestAssured.port = keycloakContainer.getMappedPort(8080);
         } catch (Exception cause) {
             this.exitCode = -1;
             this.stdout = List.of(backupConsumer.toUtf8String());
