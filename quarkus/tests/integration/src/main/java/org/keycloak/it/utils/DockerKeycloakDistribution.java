@@ -27,18 +27,15 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
     private List<String> stderr = List.of();
     private ToStringConsumer backupConsumer = new ToStringConsumer();
 
-    private String version() {
-        return Maven.resolveArtifact("org.keycloak", "keycloak-server-x-dist", "tar.gz")
-                .map(Artifact::getVersion)
-                .orElseThrow(new Supplier<RuntimeException>() {
-                    @Override
-                    public RuntimeException get() {
-                        return new RuntimeException("Could not obtain distribution artifact");
-                    }
-                });
-    }
-
-    private File distributionFile = new File("../../../distribution/server-x-dist/target/keycloak.x-" + version() + ".tar.gz");
+    private File distributionFile = Maven
+        .resolveArtifact("org.keycloak", "keycloak-server-x-dist", "tar.gz")
+        .map(Artifact::getFile)
+                    .orElseThrow(new Supplier<RuntimeException>() {
+            @Override
+            public RuntimeException get() {
+                return new RuntimeException("Could not obtain distribution artifact");
+            }
+        });
 
     private GenericContainer keycloakContainer = null;
 
