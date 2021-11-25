@@ -403,6 +403,9 @@ jobs:
           java-version: ${{ env.DEFAULT_JDK_VERSION }}
       - name: Update maven settings
         run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
+      - name: Run Quarkus Tests in Docker
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -DkcDistribution=docker | misc/log/trimmer.sh
       - name: Run Quarkus Tests
         run: |
           mvn clean install -nsu -B -f quarkus/tests/pom.xml  | misc/log/trimmer.sh
