@@ -31,6 +31,9 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
     private GenericContainer keycloakContainer = null;
 
     private GenericContainer runKeycloakContainer() {
+        if (!distributionFile.exists()) {
+            throw new RuntimeException("Distribution archive " + distributionFile.getAbsolutePath() +" doesn't exists");
+        }
         return new GenericContainer(
                 new ImageFromDockerfile()
                         .withFileFromFile("keycloakx.tar.gz", distributionFile)

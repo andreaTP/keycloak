@@ -403,10 +403,11 @@ jobs:
           java-version: ${{ env.DEFAULT_JDK_VERSION }}
       - name: Update maven settings
         run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
+      - name: Prepare the local distribution archives
+        run: mvn clean install -DskipTests -Pdistribution
       - name: Run Quarkus Tests in Docker
         run: |
-          mvn test -f quarkus/tests/pom.xml -DkcDistribution=docker
-          # mvn clean install -nsu -B -f quarkus/tests/pom.xml -DkcDistribution=docker | misc/log/trimmer.sh
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -DkcDistribution=docker | misc/log/trimmer.sh
           TEST_RESULT=${PIPESTATUS[0]}
           exit $TEST_RESULT
 
