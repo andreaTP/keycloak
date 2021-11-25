@@ -1,6 +1,5 @@
 package org.keycloak.it.utils;
 
-import org.eclipse.aether.artifact.Artifact;
 import org.jboss.logging.Logger;
 import org.keycloak.common.Version;
 import org.testcontainers.containers.GenericContainer;
@@ -14,7 +13,6 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
-import java.util.function.Supplier;
 
 public final class DockerKeycloakDistribution implements KeycloakDistribution {
 
@@ -58,15 +56,14 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
             this.stderr = List.of();
             this.backupConsumer = new ToStringConsumer();
 
-            if (keycloakContainer == null) {
-                keycloakContainer = runKeycloakContainer();
-            }
+            keycloakContainer = runKeycloakContainer();
 
             keycloakContainer
                     .withLogConsumer(backupConsumer)
                     .withCommand(arguments.toArray(new String[0]))
                     .start();
-            
+
+            // TODO: this is based on a lot of assumptions
             io.restassured.RestAssured.port = keycloakContainer.getMappedPort(8080);
         } catch (Exception cause) {
             this.exitCode = -1;
