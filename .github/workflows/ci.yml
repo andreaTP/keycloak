@@ -414,8 +414,6 @@ jobs:
 
       - name: Run Quarkus Tests in Docker
         run: |
-          # https://www.testcontainers.org/features/configuration/#disabling-ryuk
-          export TESTCONTAINERS_RYUK_DISABLED=true
           mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
           TEST_RESULT=${PIPESTATUS[0]}
           exit $TEST_RESULT
