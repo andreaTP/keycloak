@@ -1,5 +1,6 @@
 package org.keycloak.it.utils;
 
+import com.github.dockerjava.api.DockerClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jboss.logging.Logger;
@@ -7,15 +8,21 @@ import org.keycloak.common.Version;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.ToStringConsumer;
+import org.testcontainers.containers.startupcheck.IsRunningStartupCheckStrategy;
 import org.testcontainers.containers.startupcheck.OneShotStartupCheckStrategy;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public final class DockerKeycloakDistribution implements KeycloakDistribution {
 
@@ -50,10 +57,7 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
                         .withFileFromFile("Dockerfile", dockerFile)
                         .withBuildArg("KEYCLOAK_DIST", "keycloakx.tar.gz")
         )
-                .withExposedPorts(8080)
-                .withStartupTimeout(Duration.ofSeconds(40))
-                .withStartupAttempts(1)
-                .waitingFor(Wait.forHttp("/").forStatusCode(200).withReadTimeout(Duration.ofSeconds(2)));
+                .withExposedPorts(8080);
     }
 
     public <T> DockerKeycloakDistribution(boolean debug, boolean manualStop, boolean reCreate) {
@@ -68,6 +72,7 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
             this.stdout = List.of();
             this.stderr = List.of();
             this.backupConsumer = new ToStringConsumer();
+
 
             keycloakContainer = runKeycloakContainer();
 
@@ -95,12 +100,13 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
                 this.stderr = getErrorStream();
 
                 keycloakContainer.stop();
-                keycloakContainer = null;
                 this.exitCode = 0;
             }
         } catch (Exception cause) {
             this.exitCode = -1;
             throw new RuntimeException("Failed to stop the server", cause);
+        } finally {
+            keycloakContainer = null;
         }
     }
 
