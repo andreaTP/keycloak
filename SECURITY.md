@@ -1,5 +1,7 @@
 # Security Policy
 
+This is a different commit
+
 The Keycloak team takes security very seriously, and aim to resolve issues as quickly as possible. Building secure
 software is a continuous process, and can always be improved. As such we welcome reports on potential security 
 vulnerabilities, as well as suggestions around hardening the software and our process.
