@@ -57,6 +57,7 @@ public interface CLIResult extends LaunchResult {
     }
 
     default void assertStartedDevMode() {
+
         assertTrue(getOutput().contains("Running the server in dev mode."),
                 () -> "The standard output:\n" + getOutput() + "doesn't include the Start Dev output");
     }

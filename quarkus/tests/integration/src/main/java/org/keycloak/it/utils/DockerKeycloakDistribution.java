@@ -6,12 +6,17 @@ import org.keycloak.common.Version;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.ToStringConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.ResourceReaper;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public final class DockerKeycloakDistribution implements KeycloakDistribution {
 
@@ -30,6 +35,14 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
     private boolean dockerfileFetched = false;
 
     private GenericContainer keycloakContainer = null;
+    private String containerId = null;
+
+    private Executor parallelReaperExecutor = Executors.newSingleThreadExecutor();
+
+    public <T> DockerKeycloakDistribution(boolean debug, boolean manualStop, boolean reCreate) {
+        this.debug = debug;
+        this.manualStop = manualStop;
+    }
 
     private File createDockerCacheFile() {
         try {
@@ -58,25 +71,25 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
         }
         fetchDockerfile();
         return new GenericContainer(
-                new ImageFromDockerfile()
+                new ImageFromDockerfile("keycloak.x-under-test", false)
                         .withFileFromFile("keycloakx.tar.gz", distributionFile)
                         .withFileFromFile("Dockerfile", cachedDockerfile)
                         .withBuildArg("KEYCLOAK_DIST", "keycloakx.tar.gz")
         )
-                .withExposedPorts(8080);
-    }
-
-    public <T> DockerKeycloakDistribution(boolean debug, boolean manualStop, boolean reCreate) {
-        this.debug = debug;
-        this.manualStop = manualStop;
+                .withExposedPorts(8080)
+                .withStartupAttempts(1)
+                .withStartupTimeout(Duration.ofSeconds(120))
+                .waitingFor(Wait.forListeningPort());
     }
 
     @Override
     public void start(List<String> arguments) {
+        stop();
         try {
             this.exitCode = -1;
             this.stdout = "";
             this.stderr = "";
+            this.containerId = null;
             this.backupConsumer = new ToStringConsumer();
 
 
@@ -86,6 +99,7 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
                     .withLogConsumer(backupConsumer)
                     .withCommand(arguments.toArray(new String[0]))
                     .start();
+            containerId = keycloakContainer.getContainerId();
 
             // TODO: this is based on a lot of assumptions
             io.restassured.RestAssured.port = keycloakContainer.getMappedPort(8080);
@@ -93,6 +107,7 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
             this.exitCode = -1;
             this.stdout = backupConsumer.toUtf8String();
             this.stderr = backupConsumer.toUtf8String();
+            cleanupContainer();
             keycloakContainer = null;
             LOGGER.warn("Failed to start Keycloak container", cause);
         }
@@ -102,6 +117,7 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
     public void stop() {
         try {
             if (keycloakContainer != null) {
+                containerId = keycloakContainer.getContainerId();
                 this.stdout = fetchOutputStream();
                 this.stderr = fetchErrorStream();
 
@@ -112,9 +128,34 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
             this.exitCode = -1;
             throw new RuntimeException("Failed to stop the server", cause);
         } finally {
+            cleanupContainer();
             keycloakContainer = null;
         }
     }
+
+    private void cleanupContainer() {
+        if (containerId != null) {
+            try {
+                final String finalContainerId = containerId;
+                Runnable reaper = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ResourceReaper
+                                    .instance()
+                                    .stopAndRemoveContainer(finalContainerId);
+                        } catch (Exception cause) {
+                            throw new RuntimeException("Failed to stop and remove container", cause);
+                        }
+                    }
+                };
+                parallelReaperExecutor.execute(reaper);
+            } catch (Exception cause) {
+                throw new RuntimeException("Failed to schecdule the removal of the container", cause);
+            }
+        }
+    }
+
     private String fetchOutputStream() {
         if (keycloakContainer != null && keycloakContainer.isRunning()) {
             return keycloakContainer.getLogs(OutputFrame.OutputType.STDOUT);

@@ -417,6 +417,51 @@ jobs:
           mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
           TEST_RESULT=${PIPESTATUS[0]}
           exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 1
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 2
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 3
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 4
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 5
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 6
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 7
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 8
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
+      - name: Run Quarkus Tests in Docker 9
+        run: |
+          mvn clean install -nsu -B -f quarkus/tests/pom.xml -Dkc.quarkus.tests.dist=docker | misc/log/trimmer.sh
+          TEST_RESULT=${PIPESTATUS[0]}
+          exit $TEST_RESULT
 
       - name: Run Quarkus Integration Tests
         run: |
