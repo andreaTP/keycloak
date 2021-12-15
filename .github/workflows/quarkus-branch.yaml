@@ -22,5 +22,6 @@ jobs:
         stable_branch: 'main'
         development_branch: 'test-quarkus-branch'
         allow_ff: true
+        allow_forks: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
