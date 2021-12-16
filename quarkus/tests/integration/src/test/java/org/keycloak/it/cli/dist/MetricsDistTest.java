@@ -25,7 +25,7 @@ import org.keycloak.it.junit5.extension.DistributionTest;
 
 import io.quarkus.test.junit.main.Launch;
 
-@DistributionTest(keepAlive =true)
+@DistributionTest(keepAlive = true)
 public class MetricsDistTest {
 
     @Test
@@ -36,11 +36,11 @@ public class MetricsDistTest {
                 .body(containsString("base_gc_total"));
     }
 
-    @Test
-    @Launch({ "start-dev", "--http-relative-path=/auth", "--metrics-enabled=true" })
-    void testMetricsEndpointUsingRelativePath() {
-        when().get("/auth/metrics").then()
-                .statusCode(200)
-                .body(containsString("base_gc_total"));
-    }
+//    @Test
+//    @Launch({ "start-dev", "--http-relative-path=/auth", "--metrics-enabled=true" })
+//    void testMetricsEndpointUsingRelativePath() {
+//        when().get("/auth/metrics").then()
+//                .statusCode(200)
+//                .body(containsString("base_gc_total"));
+//    }
 }

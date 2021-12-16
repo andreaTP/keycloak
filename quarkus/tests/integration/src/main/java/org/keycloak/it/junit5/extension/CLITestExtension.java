@@ -102,6 +102,7 @@ public class CLITestExtension extends QuarkusMainTestExtension {
     public void beforeAll(ExtensionContext context) throws Exception {
         DistributionTest distConfig = getDistributionConfig(context);
 
+
         if (distConfig != null) {
             if (BEFORE_ALL.equals(distConfig.reInstall())) {
                 dist = createDistribution(distConfig);
