@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import io.quarkus.dev.console.QuarkusConsole;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -63,7 +64,6 @@ public class CLITestExtension extends QuarkusMainTestExtension {
         }
 
         if (distConfig != null) {
-
             if (launch != null) {
                 if (dist == null) {
                     dist = createDistribution(distConfig);
@@ -96,6 +96,9 @@ public class CLITestExtension extends QuarkusMainTestExtension {
         System.getProperties().remove(KeycloakPropertiesConfigSource.KEYCLOAK_CONFIG_FILE_PROP);
         System.getProperties().remove(Environment.PROFILE);
         System.getProperties().remove("quarkus.profile");
+
+        System.out.flush();
+        System.err.flush();
     }
 
     @Override

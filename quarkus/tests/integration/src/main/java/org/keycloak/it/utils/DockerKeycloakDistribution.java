@@ -1,7 +1,6 @@
 package org.keycloak.it.utils;
 
 import org.apache.commons.io.FileUtils;
-import org.jboss.logging.Logger;
 import org.keycloak.common.Version;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
@@ -19,8 +18,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public final class DockerKeycloakDistribution implements KeycloakDistribution {
-
-    private static final Logger LOGGER = Logger.getLogger(DockerKeycloakDistribution.class);
 
     private boolean debug;
     private boolean manualStop;
@@ -109,7 +106,7 @@ public final class DockerKeycloakDistribution implements KeycloakDistribution {
             this.stderr = backupConsumer.toUtf8String();
             cleanupContainer();
             keycloakContainer = null;
-            LOGGER.warn("Failed to start Keycloak container", cause);
+            throw new RuntimeException("Failed to start Keycloak container", cause);
         }
     }
 

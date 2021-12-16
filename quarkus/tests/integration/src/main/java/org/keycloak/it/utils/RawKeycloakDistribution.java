@@ -50,8 +50,6 @@ import org.keycloak.common.Version;
 
 public final class RawKeycloakDistribution implements KeycloakDistribution {
 
-    private static Logger LOGGER = Logger.getLogger(RawKeycloakDistribution.class);
-
     private Process keycloak;
     private int exitCode = -1;
     private final Path distPath;
@@ -88,7 +86,6 @@ public final class RawKeycloakDistribution implements KeycloakDistribution {
             }
         } catch (Exception cause) {
             stop();
-            throw new RuntimeException("Failed to start the server", cause);
         } finally {
             if (!manualStop) {
                 stop();
@@ -102,6 +99,10 @@ public final class RawKeycloakDistribution implements KeycloakDistribution {
             try {
                 keycloak.destroy();
                 keycloak.waitFor(10, TimeUnit.SECONDS);
+                keycloak.getInputStream().close();
+                keycloak.getOutputStream().flush();
+                keycloak.getOutputStream().close();
+                keycloak.getErrorStream().close();
                 exitCode = keycloak.exitValue();
             } catch (Exception cause) {
                 keycloak.destroyForcibly();
@@ -138,7 +139,7 @@ public final class RawKeycloakDistribution implements KeycloakDistribution {
     }
 
     private void waitForReadiness() throws MalformedURLException {
-//        LOGGER.info("**** waitForReadiness ****");
+        // LOGGER.info("**** waitForReadiness ****");
         URL contextRoot = new URL("http://localhost:" + httpPort + ("/" + relativePath + "/realms/master/").replace("//", "/"));
         HttpURLConnection connection = null;
         long startTime = System.currentTimeMillis();
@@ -160,7 +161,8 @@ public final class RawKeycloakDistribution implements KeycloakDistribution {
                     connection = (HttpURLConnection) contextRoot.openConnection();
                 }
 
-                LOGGER.info("**** FOO ****");
+                System.out.println("**** FOO ****");
+                // LOGGER.info("**** FOO ****");
 
                 connection.setReadTimeout((int) getStartTimeout());
                 connection.setConnectTimeout((int) getStartTimeout());
