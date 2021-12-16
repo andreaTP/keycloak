@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import io.quarkus.dev.console.QuarkusConsole;
+import io.quarkus.dev.console.RedirectPrintStream;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -64,6 +65,18 @@ public class CLITestExtension extends QuarkusMainTestExtension {
         }
 
         if (distConfig != null) {
+
+            if (System.out != QuarkusConsole.ORIGINAL_OUT) {
+                System.out.flush();
+                System.out.close();
+                System.setOut(QuarkusConsole.ORIGINAL_OUT);
+            }
+            if (System.err != QuarkusConsole.ORIGINAL_ERR) {
+                System.err.flush();
+                System.err.close();
+                System.setErr(QuarkusConsole.ORIGINAL_ERR);
+            }
+
             if (launch != null) {
                 if (dist == null) {
                     dist = createDistribution(distConfig);
@@ -71,6 +84,22 @@ public class CLITestExtension extends QuarkusMainTestExtension {
                 dist.start(Arrays.asList(launch.value()));
             }
         } else {
+            if (System.out == QuarkusConsole.ORIGINAL_OUT || System.err == QuarkusConsole.ORIGINAL_ERR) {
+
+                if (System.out instanceof RedirectPrintStream) {
+                    System.out.flush();
+                    System.out.close();
+                }
+
+                if (System.err instanceof RedirectPrintStream) {
+                    System.err.flush();
+                    System.err.close();
+                }
+
+                System.setOut(new RedirectPrintStream(false));
+                System.setErr(new RedirectPrintStream(true));
+            }
+
             configureProfile(context);
             super.beforeEach(context);
         }
@@ -97,14 +126,20 @@ public class CLITestExtension extends QuarkusMainTestExtension {
         System.getProperties().remove(Environment.PROFILE);
         System.getProperties().remove("quarkus.profile");
 
-        System.out.flush();
-        System.err.flush();
+        if (System.out instanceof RedirectPrintStream) {
+            System.out.flush();
+            System.out.close();
+        }
+
+        if (System.err instanceof RedirectPrintStream) {
+            System.err.flush();
+            System.err.close();
+        }
     }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         DistributionTest distConfig = getDistributionConfig(context);
-
 
         if (distConfig != null) {
             if (BEFORE_ALL.equals(distConfig.reInstall())) {
@@ -115,6 +150,15 @@ public class CLITestExtension extends QuarkusMainTestExtension {
         }
 
         super.beforeAll(context);
+
+        if (System.out instanceof RedirectPrintStream) {
+            System.out.flush();
+            System.out.close();
+        }
+        if (System.err instanceof RedirectPrintStream) {
+            System.err.flush();
+            System.err.close();
+        }
     }
 
     @Override

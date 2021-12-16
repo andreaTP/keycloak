@@ -45,7 +45,6 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.commons.io.FileUtils;
 
 import io.quarkus.bootstrap.util.ZipUtils;
-import org.jboss.logging.Logger;
 import org.keycloak.common.Version;
 
 public final class RawKeycloakDistribution implements KeycloakDistribution {
@@ -139,7 +138,6 @@ public final class RawKeycloakDistribution implements KeycloakDistribution {
     }
 
     private void waitForReadiness() throws MalformedURLException {
-        // LOGGER.info("**** waitForReadiness ****");
         URL contextRoot = new URL("http://localhost:" + httpPort + ("/" + relativePath + "/realms/master/").replace("//", "/"));
         HttpURLConnection connection = null;
         long startTime = System.currentTimeMillis();
@@ -161,8 +159,9 @@ public final class RawKeycloakDistribution implements KeycloakDistribution {
                     connection = (HttpURLConnection) contextRoot.openConnection();
                 }
 
+                // The logger library get's instantiated after quarkus have taken control of std out -> so it logs to Qaurkus singleton instance
+                // But we can use "normal" std out
                 System.out.println("**** FOO ****");
-                // LOGGER.info("**** FOO ****");
 
                 connection.setReadTimeout((int) getStartTimeout());
                 connection.setConnectTimeout((int) getStartTimeout());
