@@ -33,7 +33,7 @@ public class GroupRepresentation {
     protected Map<String, List<String>>  attributes;
     protected List<String> realmRoles;
     protected Map<String, List<String>> clientRoles;
-    protected List<GroupRepresentation> subGroups;
+    // protected List<GroupRepresentation> subGroups;
     private Map<String, Boolean> access;
 
     public String getId() {
@@ -92,11 +92,12 @@ public class GroupRepresentation {
     }
 
     public List<GroupRepresentation> getSubGroups() {
-        return subGroups;
+        // return subGroups;
+        return null;
     }
 
     public void setSubGroups(List<GroupRepresentation> subGroups) {
-        this.subGroups = subGroups;
+        // this.subGroups = subGroups;
     }
 
     public Map<String, Boolean> getAccess() {

@@ -33,8 +33,8 @@ public class ScopeRepresentation {
     private String id;
     private String name;
     private String iconUri;
-    private List<PolicyRepresentation> policies;
-    private List<ResourceRepresentation> resources;
+    // private List<PolicyRepresentation> policies;
+    // private List<ResourceRepresentation> resources;
     private String displayName;
 
     /**
@@ -97,19 +97,21 @@ public class ScopeRepresentation {
     }
 
     public List<PolicyRepresentation> getPolicies() {
-        return this.policies;
+        // return this.policies;
+        return null;
     }
 
     public void setPolicies(List<PolicyRepresentation> policies) {
-        this.policies = policies;
+        // this.policies = policies;
     }
 
     public List<ResourceRepresentation> getResources() {
-        return this.resources;
+        // return this.resources;
+        return null;
     }
 
     public void setResources(List<ResourceRepresentation> resources) {
-        this.resources = resources;
+        // this.resources = resources;
     }
 
     public boolean equals(Object o) {
