@@ -5,16 +5,16 @@ Using the [Quarkus Operator SDK](https://github.com/quarkiverse/quarkus-operator
 
 ## Activating the Module
 
-When build from the project root directory, this module is only enabled if the installed JDK is 17 or newer. 
+When build from the project root directory, this module is only enabled if the installed JDK is 11 or newer. 
 
 ## Building
 
-Ensure you have JDK 17 (or newer) installed.
+Ensure you have JDK 11 (or newer) installed.
 
 Build the Docker image with:
 
 ```bash
-mvn clean package -Dquarkus.container-image.build=true
+mvn clean package -Doperator -Dquarkus.container-image.build=true
 ```
 
 ## Contributing
@@ -30,7 +30,7 @@ eval $(minikube -p minikube docker-env)
 Compile the project and generate the Docker image with JIB:
 
 ```bash
-mvn clean package -Dquarkus.container-image.build=true -Dquarkus.kubernetes.deployment-target=minikube
+mvn clean package -Doperator -Dquarkus.container-image.build=true -Dquarkus.kubernetes.deployment-target=minikube
 ```
 
 Install the CRD definition in the cluster:
