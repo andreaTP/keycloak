@@ -158,18 +158,6 @@
         <module>tests</module>
     </modules>
 
-    <profiles>
-        <profile>
-            <id>quarkus</id>
-            <activation>
-                <jdk>[17,)</jdk>
-            </activation>
-            <modules>
-                <module>operator</module>
-            </modules>
-        </profile>
-    </profiles>
-
     <repositories>
         <repository>
             <id>jboss-public-repository</id>
