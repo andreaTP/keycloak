@@ -18,13 +18,12 @@ package org.keycloak.operator;
 
 import javax.inject.Inject;
 
-import io.fabric8.kubernetes.api.model.ListOptions;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.api.reconciler.Constants;
 import org.jboss.logging.Logger;
-import org.keycloak.operator.crds.Keycloak;
-import org.keycloak.operator.crds.KeycloakStatus;
+import org.keycloak.operator.crds.core.Keycloak;
+import org.keycloak.operator.crds.core.KeycloakStatus;
 
 @ControllerConfiguration(namespaces = Constants.WATCH_CURRENT_NAMESPACE, finalizerName = Constants.NO_FINALIZER)
 public class KeycloakController implements Reconciler<Keycloak> {

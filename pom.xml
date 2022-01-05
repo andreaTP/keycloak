@@ -139,6 +139,8 @@
         <twitter4j.version>4.0.7</twitter4j.version>
         <jna.version>4.1.0</jna.version>
 
+        <kubernetes-client.version>5.12-SNAPSHOT</kubernetes-client.version>
+
         <!-- Databases -->
         <mysql.version>8.0.23</mysql.version>
         <mysql.driver.version>8.0.23</mysql.driver.version>
@@ -1674,6 +1676,21 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>crd-generator-api</artifactId>
+                <version>${kubernetes-client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>crd-generator-apt</artifactId>
+                <version>${kubernetes-client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-client</artifactId>
+                <version>${kubernetes-client.version}</version>
             </dependency>
 
             <dependency>

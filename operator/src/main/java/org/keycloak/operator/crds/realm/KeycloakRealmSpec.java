@@ -14,17 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.keycloak.operator.crds;
+package org.keycloak.operator.crds.realm;
 
-public class KeycloakSpec {
+import org.keycloak.representations.idm.RealmRepresentation;
 
-    private int instances = 1;
+public class KeycloakRealmSpec {
 
-    public int getInstances() {
-        return instances;
-    }
+    private RealmRepresentation realm;
 
-    public void setInstances(int instances) {
-        this.instances = instances;
-    }
 }

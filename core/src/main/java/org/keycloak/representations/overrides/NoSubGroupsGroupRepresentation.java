@@ -15,27 +15,21 @@
  * limitations under the License.
  */
 
-package org.keycloak.representations.idm;
+package org.keycloak.representations.overrides;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.keycloak.representations.overrides.NoSubGroupsGroupRepresentation;
-import org.keycloak.representations.overrides.NoSubGroupsGroupRepresentationList;
-import io.fabric8.crd.generator.annotation.SchemaFrom;
-
-/**
- * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @version $Revision: 1 $
- */
-public class GroupRepresentation {
+public class NoSubGroupsGroupRepresentation {
     protected String id;
     protected String name;
     protected String path;
     protected Map<String, List<String>>  attributes;
     protected List<String> realmRoles;
     protected Map<String, List<String>> clientRoles;
-    @SchemaFrom(type = Void.class)
-    protected List<GroupRepresentation> subGroups;
+    // protected List<GroupRepresentation> subGroups;
     private Map<String, Boolean> access;
 
     public String getId() {
@@ -87,18 +81,10 @@ public class GroupRepresentation {
         this.attributes = attributes;
     }
 
-    public GroupRepresentation singleAttribute(String name, String value) {
+    public NoSubGroupsGroupRepresentation singleAttribute(String name, String value) {
         if (this.attributes == null) attributes = new HashMap<>();
         attributes.put(name, Arrays.asList(value));
         return this;
-    }
-
-    public List<GroupRepresentation> getSubGroups() {
-        return subGroups;
-    }
-
-    public void setSubGroups(List<GroupRepresentation> subGroups) {
-        this.subGroups = subGroups;
     }
 
     public Map<String, Boolean> getAccess() {

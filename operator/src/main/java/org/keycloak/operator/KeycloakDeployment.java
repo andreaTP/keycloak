@@ -19,11 +19,11 @@ package org.keycloak.operator;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import org.keycloak.operator.crds.Keycloak;
-import org.keycloak.operator.crds.KeycloakSpec;
-import org.keycloak.operator.crds.KeycloakStatus;
+import org.keycloak.operator.crds.core.Keycloak;
+import org.keycloak.operator.crds.core.KeycloakSpec;
+import org.keycloak.operator.crds.core.KeycloakStatus;
 
-import static org.keycloak.operator.crds.KeycloakStatus.State.*;
+import static org.keycloak.operator.crds.core.KeycloakStatus.State.*;
 
 public class KeycloakDeployment {
 
