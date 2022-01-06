@@ -15,22 +15,21 @@
  * limitations under the License.
  */
 
-package org.keycloak.representations.idm;
+package org.keycloak.representations.overrides;
 
 import org.keycloak.common.util.MultivaluedHashMap;
-import io.fabric8.crd.generator.annotation.SchemaFrom;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */
-public class ComponentExportRepresentation {
+public class NoSubcomponentsComponentExportRepresentation {
 
     private String id;
     private String name;
     private String providerId;
     private String subType;
-    @SchemaFrom(type = org.keycloak.representations.overrides.NoSubcomponentsComponentExportRepresentationList.class)
-    private MultivaluedHashMap<String, ComponentExportRepresentation> subComponents = new MultivaluedHashMap<>();
+    // TODO: eventually generate code for Nth levels of depth
+    // private MultivaluedHashMap<String, ComponentExportRepresentation> subComponents = new MultivaluedHashMap<>();
     private MultivaluedHashMap<String, String> config = new MultivaluedHashMap<>();
 
     public String getId() {
@@ -73,11 +72,4 @@ public class ComponentExportRepresentation {
         this.config = config;
     }
 
-    public MultivaluedHashMap<String, ComponentExportRepresentation> getSubComponents() {
-        return subComponents;
-    }
-
-    public void setSubComponents(MultivaluedHashMap<String, ComponentExportRepresentation> subComponents) {
-        this.subComponents = subComponents;
-    }
 }

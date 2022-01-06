@@ -29,6 +29,7 @@ public class NoSubGroupsGroupRepresentation {
     protected Map<String, List<String>>  attributes;
     protected List<String> realmRoles;
     protected Map<String, List<String>> clientRoles;
+    // TODO: eventually generate code for Nth levels of depth
     // protected List<GroupRepresentation> subGroups;
     private Map<String, Boolean> access;
 

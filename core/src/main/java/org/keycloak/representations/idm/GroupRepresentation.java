@@ -34,7 +34,7 @@ public class GroupRepresentation {
     protected Map<String, List<String>>  attributes;
     protected List<String> realmRoles;
     protected Map<String, List<String>> clientRoles;
-    @SchemaFrom(type = Void.class)
+    @SchemaFrom(type = org.keycloak.representations.overrides.NoSubGroupsGroupRepresentationList.class)
     protected List<GroupRepresentation> subGroups;
     private Map<String, Boolean> access;
 
