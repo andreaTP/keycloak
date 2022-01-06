@@ -29,7 +29,7 @@ public class ComponentExportRepresentation {
     private String name;
     private String providerId;
     private String subType;
-    @SchemaFrom(type = org.keycloak.representations.overrides.NoSubcomponentsComponentExportRepresentationList.class)
+    @SchemaFrom(type = org.keycloak.representations.overrides.NoSubcomponentsComponentExportRepresentationMap.class)
     private MultivaluedHashMap<String, ComponentExportRepresentation> subComponents = new MultivaluedHashMap<>();
     private MultivaluedHashMap<String, String> config = new MultivaluedHashMap<>();
 

@@ -17,7 +17,7 @@
 
 package org.keycloak.representations.overrides;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
-public class NoSubcomponentsComponentExportRepresentationList extends ArrayList<NoSubcomponentsComponentExportRepresentation> {
+public class NoSubcomponentsComponentExportRepresentationMap extends HashMap<String, NoSubcomponentsComponentExportRepresentation> {
 }
