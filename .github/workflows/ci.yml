@@ -3,7 +3,7 @@ name: Keycloak CI
 on: [push, pull_request]
 
 env:
-  # TODO: revert this
+  # TODO: revert this and maybe use a matrix
   DEFAULT_JDK_VERSION: 17
 
 concurrency:
