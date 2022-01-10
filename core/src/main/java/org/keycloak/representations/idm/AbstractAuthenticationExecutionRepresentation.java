@@ -30,6 +30,9 @@ public class AbstractAuthenticationExecutionRepresentation implements Serializab
     private String requirement;
     private int priority;
 
+    @Deprecated
+    private boolean autheticatorFlow;
+
     public String getAuthenticatorConfig() {
         return authenticatorConfig;
     }

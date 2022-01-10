@@ -20,5 +20,5 @@ package org.keycloak.representations.overrides;
 import java.util.HashMap;
 import java.util.List;
 
-public class NoSubcomponentsComponentExportRepresentationMap extends HashMap<String, List<NoSubcomponentsComponentExportRepresentation>> {
+public class MultivaluedStringStringHashMap extends HashMap<String, List<String>> {
 }

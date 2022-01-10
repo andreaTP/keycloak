@@ -19,6 +19,7 @@ package org.keycloak.representations.overrides;
 
 import java.util.HashMap;
 import java.util.List;
+import org.keycloak.representations.idm.ComponentExportRepresentation;
 
-public class NoSubcomponentsComponentExportRepresentationMap extends HashMap<String, List<NoSubcomponentsComponentExportRepresentation>> {
+public class ComponentExportRepresentationMap extends HashMap<String, List<ComponentExportRepresentation>> {
 }

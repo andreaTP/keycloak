@@ -1,0 +1,17 @@
+apiVersion: keycloak.com/v1alpha1
+kind: Keycloak
+metadata:
+  name: example-count0-kc
+spec:
+  instances: 1
+  realm:
+    id: count0
+    realm: count0
+    components:
+      org.keycloak.services.clientregistration.policy.ClientRegistrationPolicy:
+        - id: d6442b11-c554-47ef-b6e1-69a5a0000364
+          name: Consent Required
+          providerId: consent-required
+          subType: anonymous
+          subComponents: {}
+          config: {}
