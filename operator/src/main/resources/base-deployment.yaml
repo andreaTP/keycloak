@@ -4,7 +4,6 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: keycloak-operator
   name: keycloak
-  namespace: default
 spec:
   replicas: 1
   selector:
