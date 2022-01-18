@@ -58,7 +58,8 @@ jobs:
           java-package: jdk
       - name: Build and deploy operator in minikube
         run: |
-            mvn clean package -Doperator \
+          eval $(minikube -p minikube docker-env)        
+          mvn clean package -Doperator \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deploy=true \
               -Dquarkus.kubernetes.namespace=default \
