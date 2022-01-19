@@ -56,7 +56,8 @@ jobs:
           java-package: jdk
       - name: Build , deploy and test operator in minikube
         run: |
-          eval $(minikube -p minikube docker-env)        
+          eval $(minikube -p minikube docker-env) 
+          cd operator
           mvn -B clean verify -Doperator \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deploy=true \
@@ -70,8 +71,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
       - name: Deploy snapshot image to quay
         run: |
+          cd operator
           mvn -B package -Doperator \
                       -Dquarkus.container-image.push=true \
                       -Dquarkus.container-image.group=${{ github.repository_owner }} \
