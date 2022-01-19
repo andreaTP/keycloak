@@ -48,11 +48,11 @@ jobs:
           eval $(minikube -p minikube docker-env) 
           cd operator
           kubectl create namespace keycloak-test
-          mvn -B clean verify -Doperator \
+          mvn clean verify -Doperator \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deploy=true \
-              -Dquarkus.kubernetes.namespace=default \
-              -Dquarkus.kubernetes-client.namespace=default \
+              -Dquarkus.kubernetes.namespace=keycloak-test \
+              -Dquarkus.kubernetes-client.namespace=keycloak-test \
               -Dquarkus.kubernetes.deployment-target=minikube \
               --no-transfer-progress \
               -Dtest=OperatorE2ERemoteIT
