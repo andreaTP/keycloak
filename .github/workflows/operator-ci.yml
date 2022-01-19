@@ -36,6 +36,7 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -67,6 +68,7 @@ jobs:
   deploy:
     name: deploy to quay
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Deploy snapshot image to quay
         run: |
