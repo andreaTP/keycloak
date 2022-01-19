@@ -54,17 +54,16 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
           java-package: jdk
-      - name: Build and deploy operator in minikube
+      - name: Build , deploy and test operator in minikube
         run: |
           eval $(minikube -p minikube docker-env)        
-          mvn clean package -Doperator \
+          mvn clean verify -Doperator \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deploy=true \
               -Dquarkus.kubernetes.namespace=default \
               -Dquarkus.kubernetes-client.namespace=default \
               -Dquarkus.kubernetes.deployment-target=minikube \
-              -DskipTests
-          mvn test -Dtest=OperatorE2ERemoteIT
+              -Dtest=OperatorE2ERemoteIT
   deploy:
     name: deploy to quay
     runs-on: ubuntu-latest
