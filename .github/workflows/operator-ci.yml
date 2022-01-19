@@ -69,7 +69,6 @@ jobs:
     steps:
       - name: Deploy snapshot image to quay
         run: |
-          docker login quay.io -u {{secrets.QUAY_USER}}
           mvn package -Doperator \
                       -Dquarkus.container-image.push=true \
                       -Dquarkus.container-image.group=${{ github.repository_owner }} \
