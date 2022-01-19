@@ -64,7 +64,7 @@ jobs:
               -Dquarkus.kubernetes.namespace=default \
               -Dquarkus.kubernetes-client.namespace=default \
               -Dquarkus.kubernetes.deployment-target=minikube \
-              --no-transfer-progress
+              --no-transfer-progress \
               -Dtest=OperatorE2ERemoteIT
   deploy:
     name: deploy to quay
@@ -79,9 +79,9 @@ jobs:
           mvn -B package -Doperator \
                       -Dquarkus.container-image.push=true \
                       -Dquarkus.container-image.group=${{ github.repository_owner }} \
-                      -Dquarkus.container-image.additional-tags=latest-jar
-                      -Dquarkus.container-image.registry=${{ secrets.REGISTRY }} 
-                      -Dquarkus.container-image.username=${{ secrets.REGISTRY_ROBOT_USERNAME }} 
-                      -Dquarkus.container-image.password=${{ secrets.REGISTRY_ROBOT_TOKEN }}
+                      -Dquarkus.container-image.additional-tags=latest-jar \
+                      -Dquarkus.container-image.registry=${{ secrets.REGISTRY }} \ 
+                      -Dquarkus.container-image.username=${{ secrets.REGISTRY_ROBOT_USERNAME }} \ 
+                      -Dquarkus.container-image.password=${{ secrets.REGISTRY_ROBOT_TOKEN }} \
                       -DskipTests \
                       --no-transfer-progress

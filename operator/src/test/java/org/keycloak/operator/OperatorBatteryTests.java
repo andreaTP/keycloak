@@ -33,7 +33,7 @@ public class OperatorBatteryTests {
         assertThat(k8sclient.serviceAccounts().inNamespace(namespace).withName("keycloak-operator").get()).isNotNull();
 
         // CR
-        Resource<Keycloak> keycloakResource = k8sclient.resources(Keycloak.class).load("src/main/resources/example-keycloak.yml");
+        Resource<Keycloak> keycloakResource = k8sclient.resources(Keycloak.class).load("kubernetes/example-keycloak.yml");
         k8sclient.resources(Keycloak.class).inNamespace(namespace).createOrReplace(keycloakResource.get());
 
         assertThat(k8sclient.resources(Keycloak.class).inNamespace(namespace).withName("example-kc").get()).isNotNull();
