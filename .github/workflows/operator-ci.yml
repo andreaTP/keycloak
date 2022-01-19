@@ -57,13 +57,13 @@ jobs:
       - name: Build , deploy and test operator in minikube
         run: |
           eval $(minikube -p minikube docker-env)        
-          mvn clean verify -Doperator \
+          mvn -B clean verify -Doperator \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deploy=true \
               -Dquarkus.kubernetes.namespace=default \
               -Dquarkus.kubernetes-client.namespace=default \
               -Dquarkus.kubernetes.deployment-target=minikube \
-              -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+              --no-transfer-progress
               -Dtest=OperatorE2ERemoteIT
   deploy:
     name: deploy to quay
@@ -72,7 +72,7 @@ jobs:
     steps:
       - name: Deploy snapshot image to quay
         run: |
-          mvn package -Doperator \
+          mvn -B package -Doperator \
                       -Dquarkus.container-image.push=true \
                       -Dquarkus.container-image.group=${{ github.repository_owner }} \
                       -Dquarkus.container-image.additional-tags=latest-jar
@@ -80,4 +80,4 @@ jobs:
                       -Dquarkus.container-image.username=${{ secrets.REGISTRY_ROBOT_USERNAME }} 
                       -Dquarkus.container-image.password=${{ secrets.REGISTRY_ROBOT_TOKEN }}
                       -DskipTests \
-                      -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+                      --no-transfer-progress
