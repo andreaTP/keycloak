@@ -63,6 +63,7 @@ jobs:
               -Dquarkus.kubernetes.namespace=default \
               -Dquarkus.kubernetes-client.namespace=default \
               -Dquarkus.kubernetes.deployment-target=minikube \
+              -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
               -Dtest=OperatorE2ERemoteIT
   deploy:
     name: deploy to quay
@@ -78,4 +79,5 @@ jobs:
                       -Dquarkus.container-image.registry=${{ secrets.REGISTRY }} 
                       -Dquarkus.container-image.username=${{ secrets.REGISTRY_ROBOT_USERNAME }} 
                       -Dquarkus.container-image.password=${{ secrets.REGISTRY_ROBOT_TOKEN }}
-                      -DskipTests
+                      -DskipTests \
+                      -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
