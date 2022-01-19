@@ -47,6 +47,7 @@ jobs:
         run: |
           eval $(minikube -p minikube docker-env) 
           cd operator
+          kubectl create namespace keycloak-test
           mvn -B clean verify -Doperator \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deploy=true \
@@ -55,23 +56,3 @@ jobs:
               -Dquarkus.kubernetes.deployment-target=minikube \
               --no-transfer-progress \
               -Dtest=OperatorE2ERemoteIT
-  push:
-    if: ${{ false }}
-    name: push to registry
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
-      - name: Deploy snapshot image to quay
-        run: |
-          cd operator
-          mvn -B package -Doperator \
-                      -Dquarkus.container-image.push=true \
-                      -Dquarkus.container-image.group=${{ github.repository_owner }} \
-                      -Dquarkus.container-image.additional-tags=latest-jar \
-                      -Dquarkus.container-image.registry=${{ secrets.REGISTRY }} \ 
-                      -Dquarkus.container-image.username=${{ secrets.REGISTRY_ROBOT_USERNAME }} \ 
-                      -Dquarkus.container-image.password=${{ secrets.REGISTRY_ROBOT_TOKEN }} \
-                      -DskipTests \
-                      --no-transfer-progress
