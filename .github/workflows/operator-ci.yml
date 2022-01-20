@@ -54,5 +54,5 @@ jobs:
               -Dquarkus.kubernetes.namespace=keycloak-test \
               -Dquarkus.kubernetes-client.namespace=keycloak-test \
               -Dquarkus.kubernetes.deployment-target=minikube \
-              --no-transfer-progress \
+              --no-transfer-progress 
           mvn verify -Dtest=OperatorE2ERemoteIT
