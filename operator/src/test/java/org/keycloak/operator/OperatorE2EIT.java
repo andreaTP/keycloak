@@ -49,7 +49,7 @@ public class OperatorE2EIT extends ClusterOperatorTest {
                 .untilAsserted(() -> assertThat(k8sclient.namespaces().withName(namespace).get()).isNotNull());
         assertThat(k8sclient.namespaces().withName(namespace + "XX").get()).isNull();
 
-        Awaitility.await()
+            Awaitility.await()
                 .atMost(Duration.ofSeconds(5))
                 .pollDelay(Duration.ofSeconds(1))
                 .untilAsserted(() -> assertThat(k8sclient.rbac().clusterRoles().withName("keycloakcontroller-cluster-role").get()).isNotNull());
@@ -77,7 +77,7 @@ public class OperatorE2EIT extends ClusterOperatorTest {
         StringBuffer podlog = new StringBuffer();
         try {
             Awaitility.await()
-                    .atMost(Duration.ofSeconds(30L))
+                    .atMost(Duration.ofSeconds(60))
                     .pollDelay(Duration.ofSeconds(5))
                     .untilAsserted(() -> {
                         k8sclient.pods().inNamespace(namespace).list().getItems().stream()
