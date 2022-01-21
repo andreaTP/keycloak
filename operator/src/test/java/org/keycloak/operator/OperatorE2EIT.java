@@ -1,6 +1,7 @@
 package org.keycloak.operator;
 
 import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.assertj.core.api.ObjectAssert;
@@ -80,13 +81,18 @@ public class OperatorE2EIT extends ClusterOperatorTest {
                     .atMost(Duration.ofSeconds(60))
                     .pollDelay(Duration.ofSeconds(5))
                     .untilAsserted(() -> {
-                        k8sclient.pods().inNamespace(namespace).list().getItems().stream()
-                                .filter(a -> a.getMetadata().getName().startsWith("keycloak"))
-                                .forEach(a -> podlog.append(a.getMetadata().getName()).append(" : ").append(k8sclient.pods().inNamespace(namespace).withName(a.getMetadata().getName()).getLog(true)));
+                        try {
+                            k8sclient.pods().inNamespace(namespace).list().getItems().stream()
+                                    .filter(a -> a.getMetadata().getName().startsWith("keycloak"))
+                                    .forEach(a -> podlog.append(a.getMetadata().getName()).append(" : ")
+                                            .append(k8sclient.pods().inNamespace(namespace).withName(a.getMetadata().getName()).getLog(true)));
+                        } catch (KubernetesClientException e) {
+                            logger.info("Exception getting the log :" + e.getStackTrace());
+                        }
                         assertThat(k8sclient.apps().deployments().inNamespace(namespace).withName("keycloak").get().getStatus().getReadyReplicas()).isEqualTo(1);
                     });
         } catch (ConditionTimeoutException e) {
-            logger.debug("On error POD LOG " + podlog);
+            logger.info("On error POD LOG " + podlog);
             throw e;
         }
 
