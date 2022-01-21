@@ -45,14 +45,10 @@ jobs:
 
       - name: Build , deploy and test operator in minikube
         run: |
-          eval $(minikube -p minikube docker-env) 
           cd operator
-          kubectl create namespace keycloak-test
+          eval $(minikube -p minikube docker-env) 
           mvn clean package \
               -Dquarkus.container-image.build=true \
-              -Dquarkus.kubernetes.deploy=true \
-              -Dquarkus.kubernetes.namespace=keycloak-test \
-              -Dquarkus.kubernetes-client.namespace=keycloak-test \
               -Dquarkus.kubernetes.deployment-target=minikube \
               --no-transfer-progress 
-          mvn verify -Dtest=OperatorE2ERemoteIT
+          mvn test -DtestRemote
