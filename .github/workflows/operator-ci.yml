@@ -47,8 +47,8 @@ jobs:
         run: |
           cd operator
           eval $(minikube -p minikube docker-env) 
-          mvn clean package \
+          mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=minikube \
               --no-transfer-progress 
-          mvn test -DtestRemote
+          mvn test -DtestRemote=true
