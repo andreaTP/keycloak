@@ -50,5 +50,4 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=minikube \
-              --no-transfer-progress 
-          mvn test -DtestRemote=true
+              --no-transfer-progress -DtestRemote=true
