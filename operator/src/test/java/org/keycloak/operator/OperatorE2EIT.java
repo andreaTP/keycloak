@@ -4,7 +4,6 @@ import io.fabric8.kubernetes.api.model.Node;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.quarkus.test.junit.QuarkusTest;
-import org.assertj.core.api.ObjectAssert;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
@@ -17,28 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class OperatorE2EIT extends ClusterOperatorTest {
-    @Test
-    public void localRunTest() throws InterruptedException {
-        logger.info("++++++++++++++++++++++++++++++ Local Run Test :" + operator + " -- " + namespace);
-        testOperator();
-        logger.info("************* FINISHED TEST 1 !!!!!!!! ");
-
-    }
-    @Test
-    public void localRunTest2() throws InterruptedException {
-        logger.info("++++++++++++++++++++++++++++++ Local Run Test 2 :" + operator + " -- " + namespace);
-        testOperator();
-        logger.info("************* FINISHED TEST 2 !!!!!!!! ");
-    }
 
     @Test
-    public void localRunTest3() throws InterruptedException {
-        logger.info("++++++++++++++++++++++++++++++ Local Run Test 3 :" + operator + " -- " + namespace);
-        testOperator();
-        logger.info("************* FINISHED TEST 3 !!!!!!!! ");
-    }
+    public void given_ClusterAndOperatorRunning_when_KeycloakCRCreated_Then_KeycloakStructureIsDeployedAndStatusIsOK() {
+        logger.info(((testremote) ? "Remote " : "Local ") + "Run Test :" + operator + " -- " + namespace);
 
-    private void testOperator() throws InterruptedException {
         // Node
         List<Node> nodes = k8sclient.nodes().list().getItems();
         assertThat(nodes).hasSize(1);
@@ -49,15 +31,6 @@ public class OperatorE2EIT extends ClusterOperatorTest {
                 .pollDelay(Duration.ofSeconds(1))
                 .untilAsserted(() -> assertThat(k8sclient.namespaces().withName(namespace).get()).isNotNull());
         assertThat(k8sclient.namespaces().withName(namespace + "XX").get()).isNull();
-
-            Awaitility.await()
-                .atMost(Duration.ofSeconds(5))
-                .pollDelay(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(k8sclient.rbac().clusterRoles().withName("keycloakcontroller-cluster-role").get()).isNotNull());
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(5))
-                .pollDelay(Duration.ofSeconds(1))
-                .untilAsserted(() -> assertThat(k8sclient.serviceAccounts().inNamespace(namespace).withName("keycloak-operator").get()).isNotNull());
 
         // CR
         Resource<Keycloak> keycloakResource = k8sclient.resources(Keycloak.class).load("kubernetes/example-keycloak.yml");

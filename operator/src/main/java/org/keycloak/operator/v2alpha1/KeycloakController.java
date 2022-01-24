@@ -21,15 +21,15 @@ import javax.inject.Inject;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.api.reconciler.Constants;
-import io.javaoperatorsdk.operator.junit.KubernetesClientAware;
 import org.jboss.logging.Logger;
 import org.keycloak.operator.v2alpha1.crds.Keycloak;
 import org.keycloak.operator.v2alpha1.crds.KeycloakStatus;
 
 @ControllerConfiguration(namespaces = Constants.WATCH_CURRENT_NAMESPACE, finalizerName = Constants.NO_FINALIZER)
-public class KeycloakController implements Reconciler<Keycloak>, KubernetesClientAware {
+public class KeycloakController implements Reconciler<Keycloak> {
 
-    private static final Logger logger = Logger.getLogger(KeycloakController.class);
+    @Inject
+    Logger logger;
 
     @Inject
     KubernetesClient client;
@@ -72,15 +72,5 @@ public class KeycloakController implements Reconciler<Keycloak>, KubernetesClien
             kc.setStatus(status);
             return UpdateControl.updateStatus(kc);
         }
-    }
-
-    @Override
-    public void setKubernetesClient(KubernetesClient kubernetesClient) {
-        client = kubernetesClient;
-    }
-
-    @Override
-    public KubernetesClient getKubernetesClient() {
-        return client;
     }
 }

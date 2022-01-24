@@ -15,7 +15,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.*;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -28,6 +27,7 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class ClusterOperatorTest {
+  public static final String TARGET_KUBERNETES_MINIKUBE_YML = "target/kubernetes/minikube.yml";
   @Inject
   Logger logger;
 
@@ -50,11 +50,12 @@ public abstract class ClusterOperatorTest {
     createK8sClient();
     createNamespace();
 
-    if (!testremote) {
+    if (testremote) {
+      createRBACresourcesAndOperatorDeployment();
+    } else {
       createOperator();
       registerReconcilers();
       operator.start();
-      createRBACresources();
     }
 
   }
@@ -63,17 +64,14 @@ public abstract class ClusterOperatorTest {
     k8sclient = new DefaultKubernetesClient(new ConfigBuilder(Config.autoConfigure(null)).withNamespace(namespace).build());
   }
 
-  private void createRBACresources() throws FileNotFoundException {
-    // ROLE, BINDING, SERVICEACCOUNT
+  private void createRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
     logger.info("Creating RBAC into Namespace " + namespace);
-    InputStream resourceAsStreamRBAC = new FileInputStream("target/kubernetes/minikube.yml");
+    k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML)).createOrReplace();
+  }
 
-    k8sclient.load(resourceAsStreamRBAC).get().stream()
-            .filter(a -> !a.getKind().equalsIgnoreCase("Deployment") || testremote)
-            .forEach(res -> {
-              logger.info("...........Deploying : " + res.getKind() + " | " + res.getMetadata().getName());
-              k8sclient.resource(res).inNamespace(namespace).createOrReplace();
-            });
+  private void cleanRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
+    logger.info("Deleting RBAC from Namespace " + namespace);
+    k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML)).delete();
   }
 
   private void registerReconcilers() {
@@ -102,14 +100,16 @@ public abstract class ClusterOperatorTest {
   }
 
   @AfterEach
-  public void after() {
+  public void after() throws FileNotFoundException {
     logger.info("Cleaning up namespace : " + namespace);
 
+    cleanRBACresourcesAndOperatorDeployment();
     assertThat(k8sclient.namespaces().withName(namespace).delete()).isTrue();
     Awaitility
             .await()
             .atMost(Duration.ofSeconds(60))
             .untilAsserted(() -> assertThat(k8sclient.namespaces().withName(namespace).get()).isNull());
+
     if (!testremote) {
       operator.stop();
     }
