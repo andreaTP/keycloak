@@ -28,23 +28,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class ClusterOperatorTest {
 
+  public static final String QUARKUS_KUBERNETES_DEPLOYMENT_TARGET = "quarkus.kubernetes.deployment-target";
+
   public enum OperatorDeployment {local,remote}
 
   public static final String OPERATOR_DEPLOYMENT_PROP = "operator.deployment";
-  public static final String TARGET_KUBERNETES_MINIKUBE_YML = "target/kubernetes/minikube.yml";
+  public static final String TARGET_KUBERNETES_MINIKUBE_YML = "target/kubernetes/";
 
   protected static OperatorDeployment operatorDeployment;
   protected static Instance<Reconciler<? extends HasMetadata>> reconcilers;
   protected static QuarkusConfigurationService configuration;
   protected static KubernetesClient k8sclient;
   protected static String namespace;
+  protected static String deploymentTarget;
   private static Operator operator;
+
 
   @BeforeAll
   public static void before() throws FileNotFoundException {
     configuration = CDI.current().select(QuarkusConfigurationService.class).get();
-    operatorDeployment = ConfigProvider.getConfig().getOptionalValue(OPERATOR_DEPLOYMENT_PROP, OperatorDeployment.class).orElse(OperatorDeployment.local);
     reconcilers = CDI.current().select(new TypeLiteral<>() {});
+    operatorDeployment = ConfigProvider.getConfig().getOptionalValue(OPERATOR_DEPLOYMENT_PROP, OperatorDeployment.class).orElse(OperatorDeployment.local);
+    deploymentTarget = ConfigProvider.getConfig().getOptionalValue(QUARKUS_KUBERNETES_DEPLOYMENT_TARGET, String.class).orElse("kubernetes");
 
     calculateNamespace();
     createK8sClient();
@@ -66,12 +71,12 @@ public abstract class ClusterOperatorTest {
 
   private static void createRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
     Log.info("Creating RBAC into Namespace " + namespace);
-    k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML)).createOrReplace();
+    k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML+deploymentTarget+".yml")).createOrReplace();
   }
 
   private static void cleanRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
     Log.info("Deleting RBAC from Namespace " + namespace);
-    k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML)).delete();
+    k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML+deploymentTarget+".yml")).delete();
   }
 
   private static void registerReconcilers() {
@@ -99,7 +104,7 @@ public abstract class ClusterOperatorTest {
     namespace = "keycloak-test-" + UUID.randomUUID();
   }
 
-  @AfterAll
+  //@AfterAll
   public static void after() throws FileNotFoundException {
     Log.info("Cleaning up namespace : " + namespace);
 

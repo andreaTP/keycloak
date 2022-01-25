@@ -47,5 +47,5 @@ jobs:
           eval $(minikube -p minikube docker-env) 
           mvn clean verify \
               -Dquarkus.container-image.build=true \
-              -Dquarkus.kubernetes.deployment-target=minikube \
+              -Dquarkus.kubernetes.deployment-target=kubernetes \
               --no-transfer-progress -Doperator.deployment=remote
