@@ -41,8 +41,6 @@ jobs:
           kubernetes version: v1.22.3
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
-          start args: ' --addons=ingress '
-
       - name: Build , deploy and test operator in minikube
         run: |
           cd operator
@@ -50,4 +48,4 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=minikube \
-              --no-transfer-progress -DtestRemote=true
+              --no-transfer-progress -Doperator.deployment=remote

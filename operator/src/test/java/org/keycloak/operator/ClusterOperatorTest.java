@@ -10,47 +10,47 @@ import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.quarkiverse.operatorsdk.runtime.OperatorProducer;
 import io.quarkiverse.operatorsdk.runtime.QuarkusConfigurationService;
+import io.quarkus.logging.Log;
 import org.awaitility.Awaitility;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.util.TypeLiteral;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.time.Duration;
-import java.util.*;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class ClusterOperatorTest {
+
+  public enum OperatorDeployment {local,remote}
+
+  public static final String OPERATOR_DEPLOYMENT_PROP = "operator.deployment";
   public static final String TARGET_KUBERNETES_MINIKUBE_YML = "target/kubernetes/minikube.yml";
-  @Inject
-  Logger logger;
 
-  @ConfigProperty(name = "testremote", defaultValue = "false")
-  Boolean testremote;
+  protected static OperatorDeployment operatorDeployment;
+  protected static Instance<Reconciler<? extends HasMetadata>> reconcilers;
+  protected static QuarkusConfigurationService configuration;
+  protected static KubernetesClient k8sclient;
+  protected static String namespace;
+  private static Operator operator;
 
-  @Inject
-  Instance<Reconciler<? extends HasMetadata>> reconcilers;
+  @BeforeAll
+  public static void before() throws FileNotFoundException {
+    configuration = CDI.current().select(QuarkusConfigurationService.class).get();
+    operatorDeployment = ConfigProvider.getConfig().getOptionalValue(OPERATOR_DEPLOYMENT_PROP, OperatorDeployment.class).orElse(OperatorDeployment.local);
+    reconcilers = CDI.current().select(new TypeLiteral<>() {});
 
-  @Inject
-  QuarkusConfigurationService configuration;
-
-  protected Operator operator;
-  protected KubernetesClient k8sclient;
-  protected String namespace;
-
-  @BeforeEach
-  public void before() throws FileNotFoundException {
     calculateNamespace();
     createK8sClient();
     createNamespace();
 
-    if (testremote) {
+    if (operatorDeployment == OperatorDeployment.remote) {
       createRBACresourcesAndOperatorDeployment();
     } else {
       createOperator();
@@ -60,57 +60,60 @@ public abstract class ClusterOperatorTest {
 
   }
 
-  private void createK8sClient() {
+  private static void createK8sClient() {
     k8sclient = new DefaultKubernetesClient(new ConfigBuilder(Config.autoConfigure(null)).withNamespace(namespace).build());
   }
 
-  private void createRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
-    logger.info("Creating RBAC into Namespace " + namespace);
+  private static void createRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
+    Log.info("Creating RBAC into Namespace " + namespace);
     k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML)).createOrReplace();
   }
 
-  private void cleanRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
-    logger.info("Deleting RBAC from Namespace " + namespace);
+  private static void cleanRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
+    Log.info("Deleting RBAC from Namespace " + namespace);
     k8sclient.load(new FileInputStream(TARGET_KUBERNETES_MINIKUBE_YML)).delete();
   }
 
-  private void registerReconcilers() {
-    logger.info("Registering reconcilers for operator : " + operator + " [" + testremote + "]");
+  private static void registerReconcilers() {
+    Log.info("Registering reconcilers for operator : " + operator + " [" + operatorDeployment + "]");
 
-    for (Reconciler<? extends HasMetadata> reconciler : reconcilers) {
+    for (Reconciler reconciler : reconcilers) {
       final var config = configuration.getConfigurationFor(reconciler);
       if (!config.isRegistrationDelayed()) {
-        logger.info("Register and apply : " + reconciler.getClass().getName());
+        Log.info("Register and apply : " + reconciler.getClass().getName());
         OperatorProducer.applyCRDIfNeededAndRegister(operator, reconciler, configuration);
       }
     }
   }
 
-  private void createOperator() {
+  private static void createOperator() {
     operator = new Operator(k8sclient, configuration);
     operator.getConfigurationService().getClientConfiguration().setNamespace(namespace);
   }
 
-  private void createNamespace() {
+  private static void createNamespace() {
     k8sclient.namespaces().createOrReplace(new NamespaceBuilder().withNewMetadata().withName(namespace).endMetadata().build());
   }
 
-  private void calculateNamespace() {
+  private static void calculateNamespace() {
     namespace = "keycloak-test-" + UUID.randomUUID();
   }
 
-  @AfterEach
-  public void after() throws FileNotFoundException {
-    logger.info("Cleaning up namespace : " + namespace);
+  @AfterAll
+  public static void after() throws FileNotFoundException {
+    Log.info("Cleaning up namespace : " + namespace);
 
-    cleanRBACresourcesAndOperatorDeployment();
+    if (operatorDeployment == OperatorDeployment.remote) {
+      cleanRBACresourcesAndOperatorDeployment();
+    }
+
     assertThat(k8sclient.namespaces().withName(namespace).delete()).isTrue();
     Awaitility
             .await()
             .atMost(Duration.ofSeconds(60))
             .untilAsserted(() -> assertThat(k8sclient.namespaces().withName(namespace).get()).isNull());
 
-    if (!testremote) {
+    if (operatorDeployment == OperatorDeployment.local) {
       operator.stop();
     }
   }
