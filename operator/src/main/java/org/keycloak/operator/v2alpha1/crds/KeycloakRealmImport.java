@@ -19,13 +19,11 @@ package org.keycloak.operator.v2alpha1.crds;
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.model.annotation.Group;
-import io.fabric8.kubernetes.model.annotation.Plural;
-import io.fabric8.kubernetes.model.annotation.ShortNames;
 import io.fabric8.kubernetes.model.annotation.Version;
 import org.keycloak.operator.Constants;
 
 @Group(Constants.CRDS_GROUP)
 @Version(Constants.CRDS_VERSION)
-public class Realm extends CustomResource<RealmSpec, Void> implements Namespaced {
+public class KeycloakRealmImport extends CustomResource<KeycloakRealmImportSpec, KeycloakRealmImportStatus> implements Namespaced {
 
 }
