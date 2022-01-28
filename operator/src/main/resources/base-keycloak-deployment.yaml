@@ -29,14 +29,25 @@ spec:
         livenessProbe:
           exec:
             command:
-              - curl --head --fail --silent http://127.0.0.1:8080/health/live
+              - curl
+              - --head
+              - --fail
+              - --silent
+              - http://localhost:8080/health/live
           periodSeconds: 1
+          failureThreshold: 30
+          initialDelaySeconds: 60
         readinessProbe:
           exec:
             command:
-              - curl --head --fail --silent http://127.0.0.1:8080/health/ready
+              - curl
+              - --head
+              - --fail
+              - --silent
+              - http://localhost:8080/health/ready
           periodSeconds: 1
-          failureThreshold: 180
+          failureThreshold: 30
+          initialDelaySeconds: 60
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       terminationGracePeriodSeconds: 30

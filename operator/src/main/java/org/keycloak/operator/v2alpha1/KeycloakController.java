@@ -45,9 +45,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.javaoperatorsdk.operator.api.reconciler.Constants.WATCH_CURRENT_NAMESPACE;
+import static io.javaoperatorsdk.operator.api.reconciler.Constants.NO_FINALIZER;
 
-@ControllerConfiguration(namespaces = WATCH_CURRENT_NAMESPACE)
+@ControllerConfiguration(finalizerName = NO_FINALIZER)
 public class KeycloakController implements Reconciler<Keycloak>, EventSourceInitializer<Keycloak>, ErrorStatusHandler<Keycloak> {
 
     @Inject

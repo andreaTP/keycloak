@@ -48,4 +48,4 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              --no-transfer-progress -Doperator.deployment=remote
+              --no-transfer-progress -Dkeycloak.operator.deployment=remote
