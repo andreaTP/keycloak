@@ -85,6 +85,7 @@
         </resources>
         <plugins>
             <!-- Adding OSGI metadata to the JAR without changing the packaging type. -->
+            <!-- JUST A TEST 2 -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
