@@ -17,6 +17,7 @@
 package org.keycloak.operator.v2alpha1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
@@ -24,6 +25,7 @@ import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
+import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
 import io.quarkus.logging.Log;
 import org.keycloak.operator.v2alpha1.crds.*;
 
@@ -48,25 +50,12 @@ public class KeycloakRealmImportController implements Reconciler<KeycloakRealmIm
 
     @Override
     public List<EventSource> prepareEventSources(EventSourceContext<KeycloakRealmImport> context) {
-        SharedIndexInformer<Job> jobsInformer =
-                client
-                    .batch()
-                    .v1()
-                    .jobs()
-                    .inAnyNamespace()
-                    .withLabels(DEFAULT_LABELS)
-                    .runnableInformer(0);
+        SharedIndexInformer<Job> jobInformer =
+                client.batch().v1().jobs().inNamespace(context.getConfigurationService().getClientConfiguration().getNamespace())
+                        .withLabels(org.keycloak.operator.Constants.DEFAULT_LABELS)
+                        .runnableInformer(0);
 
-        return List.of(new InformerEventSource<>(
-                jobsInformer, job -> {
-            var ownerReferences = job.getMetadata().getOwnerReferences();
-            if (!ownerReferences.isEmpty()) {
-                return Set.of(new ResourceID(ownerReferences.get(0).getName(),
-                        job.getMetadata().getNamespace()));
-            } else {
-                return Set.of();
-            }
-        }));
+        return List.of(new InformerEventSource<>(jobInformer, Mappers.fromOwnerReference()));
     }
 
     @Override
