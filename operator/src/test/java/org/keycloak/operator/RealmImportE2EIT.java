@@ -9,6 +9,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
+import org.keycloak.operator.v2alpha1.crds.KeycloakRealmStatusCondition;
 
 import java.time.Duration;
 import java.util.List;
@@ -16,26 +17,53 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.keycloak.operator.v2alpha1.crds.KeycloakRealmStatusCondition.*;
 
 @QuarkusTest
 public class RealmImportE2EIT extends ClusterOperatorTest {
 
+    final static String KEYCLOAK_SERVICE_NAME = "example-keycloak";
+    final static int KEYCLOAK_PORT = 8080;
+
+    private KeycloakRealmStatusCondition getCondition(List<KeycloakRealmStatusCondition> conditions, String type) {
+        return conditions
+                .stream()
+                .filter(c -> c.getType().equals(type))
+                .findFirst()
+                .get();
+    }
+
     @Test
-    public void testRealmImportHappyPath() {
+    public void testWorkingRealmImport() {
         Log.info(((operatorDeployment == OperatorDeployment.remote) ? "Remote " : "Local ") + "Run Test :" + namespace);
         // Arrange
         k8sclient.load(getClass().getResourceAsStream("/example-postgres.yaml")).inNamespace(namespace).createOrReplace();
         k8sclient.load(getClass().getResourceAsStream("/example-keycloak.yml")).inNamespace(namespace).createOrReplace();
+
+        k8sclient.services().inNamespace(namespace).create(
+                new ServiceBuilder()
+                        .withNewMetadata()
+                        .withName(KEYCLOAK_SERVICE_NAME)
+                        .withNamespace(namespace)
+                        .endMetadata()
+                        .withNewSpec()
+                        .withSelector(Map.of("app", "keycloak"))
+                        .addNewPort()
+                        .withPort(KEYCLOAK_PORT)
+                        .endPort()
+                        .endSpec()
+                        .build()
+        );
 
         // Act
         k8sclient.load(getClass().getResourceAsStream("/example-realm.yaml")).inNamespace(namespace).createOrReplace();
 
         // Assert
         Awaitility.await()
-                .atMost(Duration.ofSeconds(180))
-                .pollDelay(Duration.ofSeconds(5))
+                .atMost(3, MINUTES)
+                .pollDelay(5, SECONDS)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
                     var conditions = k8sclient
@@ -45,44 +73,14 @@ public class RealmImportE2EIT extends ClusterOperatorTest {
                             .get()
                             .getStatus()
                             .getConditions();
-                    var done = conditions
-                            .stream()
-                            .filter(c -> c.getType().equals(DONE))
-                            .findFirst()
-                            .get();
-                    var started = conditions
-                            .stream()
-                            .filter(c -> c.getType().equals(STARTED))
-                            .findFirst()
-                            .get();
-                    var error = conditions
-                            .stream()
-                            .filter(c -> c.getType().equals(HAS_ERRORS))
-                            .findFirst()
-                            .get();
 
-                    assertThat(done.getStatus()).isTrue();
-                    assertThat(started.getStatus()).isFalse();
-                    assertThat(error.getStatus()).isFalse();
+                    assertThat(getCondition(conditions, DONE).getStatus()).isTrue();
+                    assertThat(getCondition(conditions, STARTED).getStatus()).isFalse();
+                    assertThat(getCondition(conditions, HAS_ERRORS).getStatus()).isFalse();
                 });
 
-        // Create a service to access Keycloak through http
-        k8sclient.services().inNamespace(namespace).create(
-                new ServiceBuilder()
-                        .withNewMetadata()
-                        .withName("example-keycloak")
-                        .endMetadata()
-                        .withNewSpec()
-                        .withSelector(Map.of("app", "keycloak"))
-                        .addNewPort()
-                        .withPort(8080)
-                        .endPort()
-                        .endSpec()
-                        .build()
-        );
-
         String url =
-                "http://example-keycloak." + namespace + ":8080/realms/count0";
+                "http://" + KEYCLOAK_SERVICE_NAME + "." + namespace + ":" + KEYCLOAK_PORT + "/realms/count0";
 
         Awaitility.await().atMost(5, MINUTES).untilAsserted(() -> {
             try {
@@ -120,6 +118,36 @@ public class RealmImportE2EIT extends ClusterOperatorTest {
                                 .get() == null);
             }
         });
+    }
+
+    @Test
+    public void testNotWorkingRealmImport() {
+        Log.info(((operatorDeployment == OperatorDeployment.remote) ? "Remote " : "Local ") + "Run Test :" + namespace);
+        // Arrange
+        k8sclient.load(getClass().getResourceAsStream("/example-postgres.yaml")).inNamespace(namespace).createOrReplace();
+        k8sclient.load(getClass().getResourceAsStream("/example-keycloak.yml")).inNamespace(namespace).createOrReplace();
+
+        // Act
+        k8sclient.load(getClass().getResourceAsStream("/incorrect-realm.yaml")).inNamespace(namespace).createOrReplace();
+
+        // Assert
+        Awaitility.await()
+                .atMost(3, MINUTES)
+                .pollDelay(5, SECONDS)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    var conditions = k8sclient
+                            .resources(KeycloakRealmImport.class)
+                            .inNamespace(namespace)
+                            .withName("example-count0-kc")
+                            .get()
+                            .getStatus()
+                            .getConditions();
+
+                    assertThat(getCondition(conditions, HAS_ERRORS).getStatus()).isTrue();
+                    assertThat(getCondition(conditions, DONE).getStatus()).isFalse();
+                    assertThat(getCondition(conditions, STARTED).getStatus()).isFalse();
+                });
     }
 
 }
