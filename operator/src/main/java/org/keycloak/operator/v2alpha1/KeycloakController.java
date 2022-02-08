@@ -16,8 +16,6 @@
  */
 package org.keycloak.operator.v2alpha1;
 
-import javax.inject.Inject;
-
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
@@ -39,7 +37,7 @@ import org.keycloak.operator.v2alpha1.crds.Keycloak;
 import org.keycloak.operator.v2alpha1.crds.KeycloakStatus;
 import org.keycloak.operator.v2alpha1.crds.KeycloakStatusBuilder;
 
-import java.util.Collections;
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,6 +79,13 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
         var kcDeployment = new KeycloakDeployment(client, config, kc, null);
         kcDeployment.updateStatus(statusBuilder);
         kcDeployment.createOrUpdateReconciled();
+
+        var kcService = new KeycloakService(client, kc);
+        kcService.updateStatus(statusBuilder);
+        kcService.createOrUpdateReconciled();
+        var kcDiscoveryService = new KeycloakDiscoveryService(client, kc);
+        kcDiscoveryService.updateStatus(statusBuilder);
+        kcDiscoveryService.createOrUpdateReconciled();
 
         var status = statusBuilder.build();
 
