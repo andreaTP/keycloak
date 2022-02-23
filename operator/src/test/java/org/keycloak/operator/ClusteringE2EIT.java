@@ -88,7 +88,7 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
 
         // get the service
         var service = new KeycloakService(k8sclient, kc);
-        String url = "http://" + service.getName() + "." + namespace + ":" + KEYCLOAK_DISCOVERY_SERVICE_PORT;
+        String url = "http://" + service.getName() + "." + namespace + ":" + KEYCLOAK_SERVICE_PORT;
 
         Awaitility.await().atMost(5, MINUTES).untilAsserted(() -> {
             Log.info("Starting curl Pod to test if the realm is available");
