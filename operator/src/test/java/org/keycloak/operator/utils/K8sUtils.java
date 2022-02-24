@@ -21,7 +21,9 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.extended.run.RunConfigBuilder;
+import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.kubernetes.client.utils.Serialization;
+import io.quarkus.kubernetes.client.runtime.KubernetesClientUtils;
 import io.quarkus.logging.Log;
 import org.awaitility.Awaitility;
 import org.keycloak.operator.v2alpha1.crds.Keycloak;
@@ -30,6 +32,7 @@ import org.keycloak.operator.v2alpha1.crds.KeycloakStatusCondition;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,11 +82,12 @@ public final class K8sUtils {
     }
 
     public static String inClusterCurl(KubernetesClient k8sclient, String namespace, String... args) {
+        var podName = KubernetesResourceUtil.sanitizeName("curl-" + UUID.randomUUID());
         try {
             Pod curlPod = k8sclient.run().inNamespace(namespace)
                     .withRunConfig(new RunConfigBuilder()
                             .withArgs(args)
-                            .withName("curl")
+                            .withName(podName)
                             .withImage("curlimages/curl:7.78.0")
                             .withRestartPolicy("Never")
                             .build())
@@ -92,7 +96,7 @@ public final class K8sUtils {
             Awaitility.await().atMost(2, MINUTES)
                     .until(() -> {
                         String phase =
-                                k8sclient.pods().inNamespace(namespace).withName("curl").get()
+                                k8sclient.pods().inNamespace(namespace).withName(podName).get()
                                         .getStatus().getPhase();
                         return phase.equals("Succeeded") || phase.equals("Failed");
                     });
@@ -106,9 +110,9 @@ public final class K8sUtils {
             throw new AssertionError(ex);
         } finally {
             Log.info("Deleting curl Pod");
-            k8sclient.pods().inNamespace(namespace).withName("curl").delete();
+            k8sclient.pods().inNamespace(namespace).withName(podName).delete();
             Awaitility.await().atMost(1, MINUTES)
-                    .until(() -> k8sclient.pods().inNamespace(namespace).withName("curl")
+                    .until(() -> k8sclient.pods().inNamespace(namespace).withName(podName)
                             .get() == null);
         }
     }

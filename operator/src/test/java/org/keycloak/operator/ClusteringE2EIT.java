@@ -129,9 +129,11 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
                 .map(a -> a.getIp())
                 .collect(Collectors.toList());
 
-        Awaitility.await().atMost(5, MINUTES).untilAsserted(() -> {
+        Awaitility.await().atMost(5, MINUTES).ignoreExceptions().untilAsserted(() -> {
             // Get the token from one instance:
             var tokenUrl = "http://" + service.getName() + "." + namespace + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/token";
+            // for (var ip: ips) {
+            // var tokenUrl = "http://" + ip + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/token";
             Log.info("Checking url: " + tokenUrl);
 
             var tokenOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "--data", "grant_type=password&client_id=token-test-client&username=test&password=test", tokenUrl);
@@ -141,16 +143,17 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
 
             var token = tokenAnswer.get("access_token").asText();
 
-            for (var ip: ips) {
+             for (var ip: ips) {
                 String url = "http://" + ip + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/userinfo";
                 Log.info("Checking url: " + url);
 
                 var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "-H", "Authorization: Bearer " + token, url);
                 Log.info("Curl Output on access attempt: " + curlOutput);
 
+
                 JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
+                assertThat(answer.get("preferred_username").asText()).isEqualTo("test");
                 assertThat(answer.hasNonNull("preferred_username")).isTrue();
-                assertThat(answer.get("preferred_username")).isEqualTo("test");
             }
         });
     }
