@@ -27,6 +27,25 @@ import picocli.CommandLine.Option;
         description = "%nExport data from realms to a file or directory.")
 public final class Export extends AbstractExportImportCommand implements Runnable {
 
+    @Option(names = "--dir",
+            arity = "1",
+            description = "Set the path to a directory where files will be created with the exported data.",
+            paramLabel = "<path>")
+    String toDir;
+
+    @Option(names = "--file",
+            arity = "1",
+            description = "Set the path to a file that will be created with the exported data.",
+            paramLabel = "<path>")
+    String toFile;
+
+
+    @Option(names = "--realm",
+            arity = "1",
+            description = "Set the name of the realm to export",
+            paramLabel = "<realm>")
+    String realm;
+
     @Option(names = "--users",
             arity = "1",
             description = "Set how users should be exported. Possible values are: skip, realm_file, same_file, different_files.",
@@ -43,6 +62,16 @@ public final class Export extends AbstractExportImportCommand implements Runnabl
 
     public Export() {
         super(ACTION_EXPORT);
+    }
+
+    protected String getToDir() {
+        return toDir;
+    }
+    protected String getToFile() {
+        return toFile;
+    }
+    protected String getRealm() {
+        return realm;
     }
 
     @Override

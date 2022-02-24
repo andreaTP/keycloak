@@ -29,6 +29,25 @@ import picocli.CommandLine.Option;
         description = "%nImport data from a directory or a file.")
 public final class Import extends AbstractExportImportCommand implements Runnable {
 
+    @Option(names = "--dir",
+            arity = "1",
+            description = "Set the path to a directory from where files will be imported.",
+            paramLabel = "<path>")
+    String toDir;
+
+    @Option(names = "--file",
+            arity = "1",
+            description = "Set the path to a file that will be used to import data.",
+            paramLabel = "<path>")
+    String toFile;
+
+
+    @Option(names = "--realm",
+            arity = "1",
+            description = "Set the name of the realm to import",
+            paramLabel = "<realm>")
+    String realm;
+
     @Option(names = "--override",
             arity = "1",
             description = "Set if existing data should be skipped or overridden.",
@@ -38,6 +57,16 @@ public final class Import extends AbstractExportImportCommand implements Runnabl
 
     public Import() {
         super(ACTION_IMPORT);
+    }
+
+    protected String getToDir() {
+        return toDir;
+    }
+    protected String getToFile() {
+        return toFile;
+    }
+    protected String getRealm() {
+        return realm;
     }
 
     @Override
