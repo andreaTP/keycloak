@@ -116,21 +116,6 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
         // get the service
         var service = new KeycloakService(k8sclient, kc);
 
-        AtomicReference<String> token = new AtomicReference<>();
-        // Obtain the token
-        Awaitility.await().atMost(5, MINUTES).ignoreExceptions().untilAsserted(() -> {
-            var url = "http://" + service.getName() + "." + namespace + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/token";
-            Log.info("Checking url: " + url);
-
-            var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "--data", "grant_type=password&client_id=token-test-client&username=test&password=test", url);
-            Log.info("Curl Output with token: " + curlOutput);
-            JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
-            assertThat(answer.hasNonNull("access_token")).isTrue();
-
-            token.set(answer.get("access_token").asText());
-            Log.info("Token is " + token.get());
-        });
-
         var endpoint = k8sclient
                 .endpoints()
                 .inNamespace(namespace)
@@ -145,11 +130,22 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
                 .collect(Collectors.toList());
 
         Awaitility.await().atMost(5, MINUTES).untilAsserted(() -> {
+            // Get the token from one instance:
+            var tokenUrl = "http://" + service.getName() + "." + namespace + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/token";
+            Log.info("Checking url: " + tokenUrl);
+
+            var tokenOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "--data", "grant_type=password&client_id=token-test-client&username=test&password=test", tokenUrl);
+            Log.info("Curl Output with token: " + tokenOutput);
+            JsonNode tokenAnswer = Serialization.jsonMapper().readTree(tokenOutput);
+            assertThat(tokenAnswer.hasNonNull("access_token")).isTrue();
+
+            var token = tokenAnswer.get("access_token").asText();
+
             for (var ip: ips) {
                 String url = "http://" + ip + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/userinfo";
                 Log.info("Checking url: " + url);
 
-                var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "-H", "Authorization: Bearer " + token.get(), url);
+                var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "-H", "Authorization: Bearer " + token, url);
                 Log.info("Curl Output on access attempt: " + curlOutput);
 
                 JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
