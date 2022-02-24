@@ -75,10 +75,14 @@ public final class K8sUtils {
     }
 
     public static String inClusterCurl(KubernetesClient k8sclient, String namespace, String url) {
+        return inClusterCurl(k8sclient, namespace, url, "-s", "-o", "/dev/null", "-w", "%{http_code}", url);
+    }
+
+    public static String inClusterCurl(KubernetesClient k8sclient, String namespace, String... args) {
         try {
             Pod curlPod = k8sclient.run().inNamespace(namespace)
                     .withRunConfig(new RunConfigBuilder()
-                            .withArgs("-s", "-o", "/dev/null", "-w", "%{http_code}", url)
+                            .withArgs(args)
                             .withName("curl")
                             .withImage("curlimages/curl:7.78.0")
                             .withRestartPolicy("Never")

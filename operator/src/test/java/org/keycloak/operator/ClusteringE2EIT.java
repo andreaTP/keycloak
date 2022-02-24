@@ -15,6 +15,7 @@ import org.keycloak.operator.utils.K8sUtils;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -85,10 +86,14 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
 //
 //    curl http://localhost:8080/realms/token-test/protocol/openid-connect/userinfo -H "Authorization: bearer $TOKEN"
 //
-//    good answer:
+//    example good answer:
 //    {"sub":"b660eec6-a93b-46fd-abb2-e9fbdff67a63","email_verified":false,"preferred_username":"test"}%
-//    error answer:
+//    example error answer:
 //    {"error":"invalid_request","error_description":"Token not provided"}%
+//
+//    in the cluster (e.g. ssh into the postgres pod `apt update && apt install curl`):
+//    curl --data "grant_type=password&client_id=token-test-client&username=test&password=test" http://example-kc-service:8080/realms/token-test/protocol/openid-connect/token
+//    curl http://example-kc-service:8080/realms/token-test/protocol/openid-connect/userinfo -H "Authorization: bearer $TOKEN"
 
     @Test
     public void testKeycloakCacheIsConnected() {
@@ -114,99 +119,41 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
         AtomicReference<String> token = new AtomicReference<>();
         // Obtain the token
         Awaitility.await().atMost(5, MINUTES).ignoreExceptions().untilAsserted(() -> {
-            Log.info("Starting curl Pod to test if the token is there");
-            String url = "http://" + service.getName() + "." + namespace + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/token";
+            var url = "http://" + service.getName() + "." + namespace + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/token";
             Log.info("Checking url: " + url);
 
-            // TODO: refactor better this part
-            try {
-                Pod curlPod = k8sclient.run().inNamespace(namespace)
-                        .withRunConfig(new RunConfigBuilder()
-                                .withArgs("-s", "--data", "grant_type=password&client_id=token-test-client&username=test&password=test", url)
-                                .withName("curl")
-                                .withImage("curlimages/curl:7.78.0")
-                                .withRestartPolicy("Never")
-                                .build())
-                        .done();
-                Log.info("Waiting for curl Pod to finish running");
-                Awaitility.await().atMost(1, MINUTES)
-                        .until(() -> {
-                            String phase =
-                                    k8sclient.pods().inNamespace(namespace).withName("curl").get()
-                                            .getStatus().getPhase();
-                            return phase.equals("Succeeded") || phase.equals("Failed");
-                        });
+            var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "--data", "grant_type=password&client_id=token-test-client&username=test&password=test", url);
+            Log.info("Curl Output with token: " + curlOutput);
+            JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
+            assertThat(answer.hasNonNull("access_token")).isTrue();
 
-                String curlOutput =
-                        k8sclient.pods().inNamespace(namespace)
-                                .withName(curlPod.getMetadata().getName()).getLog();
-
-                Log.info("Curl Output at this point: " + curlOutput);
-
-                JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
-                assertThat(answer.hasNonNull("access_token")).isTrue();
-
-                token.set(answer.get("access_token").asText());
-            } finally {
-                Log.info("Deleting curl Pod");
-                k8sclient.pods().inNamespace(namespace).withName("curl").delete();
-                Awaitility.await().atMost(1, MINUTES)
-                        .until(() -> k8sclient.pods().inNamespace(namespace).withName("curl")
-                                .get() == null);
-            }
+            token.set(answer.get("access_token").asText());
         });
 
+        var endpoint = k8sclient
+                .endpoints()
+                .inNamespace(namespace)
+                .withName(service.getName())
+                .get();
 
-        System.out.println("DEBUG");
-        System.out.println(
-                Serialization.asYaml(
-        k8sclient.services().inNamespace(namespace).withName(service.getName()).get()));
-        var something = k8sclient.services().inNamespace(namespace).withName(service.getName()).get();
-
-        var ips = something.getSpec().getClusterIPs();
+        var ips = endpoint
+                .getSubsets()
+                .stream()
+                .flatMap(e -> e.getAddresses().stream())
+                .map(a -> a.getIp())
+                .collect(Collectors.toList());
 
         Awaitility.await().atMost(5, MINUTES).untilAsserted(() -> {
             for (var ip: ips) {
-                Log.info("Starting curl Pod to test if the token is there");
                 String url = "http://" + ip + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/userinfo";
                 Log.info("Checking url: " + url);
 
-                // TODO: refactor better this part
-                try {
-                    Pod curlPod = k8sclient.run().inNamespace(namespace)
-                            .withRunConfig(new RunConfigBuilder()
-                                    .withArgs("-s", "-H", "Authorization: bearer " + token, url)
-                                    .withName("curl")
-                                    .withImage("curlimages/curl:7.78.0")
-                                    .withRestartPolicy("Never")
-                                    .build())
-                            .done();
-                    Log.info("Waiting for curl Pod to finish running");
-                    Awaitility.await().atMost(1, MINUTES)
-                            .until(() -> {
-                                String phase =
-                                        k8sclient.pods().inNamespace(namespace).withName("curl").get()
-                                                .getStatus().getPhase();
-                                return phase.equals("Succeeded") || phase.equals("Failed");
-                            });
+                var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "-H", "Authorization: bearer " + token.get(), url);
+                Log.info("Curl Output on access attempt: " + curlOutput);
 
-                    String curlOutput =
-                            k8sclient.pods().inNamespace(namespace)
-                                    .withName(curlPod.getMetadata().getName()).getLog();
-
-                    Log.info("Curl Output at this point: " + curlOutput);
-
-                    JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
-                    assertThat(answer.hasNonNull("preferred_username")).isTrue();
-                    assertThat(answer.get("preferred_username")).isEqualTo("test");
-                } finally {
-                    Log.info("Deleting curl Pod");
-                    k8sclient.pods().inNamespace(namespace).withName("curl").delete();
-                    Awaitility.await().atMost(1, MINUTES)
-                            .until(() -> k8sclient.pods().inNamespace(namespace).withName("curl")
-                                    .get() == null);
-                }
-
+                JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
+                assertThat(answer.hasNonNull("preferred_username")).isTrue();
+                assertThat(answer.get("preferred_username")).isEqualTo("test");
             }
         });
     }
