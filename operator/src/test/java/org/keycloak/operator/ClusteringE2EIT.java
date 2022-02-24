@@ -152,8 +152,8 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
 
 
                 JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
-                assertThat(answer.get("preferred_username").asText()).isEqualTo("test");
                 assertThat(answer.hasNonNull("preferred_username")).isTrue();
+                assertThat(answer.get("preferred_username").asText()).isEqualTo("test");
             }
         });
     }
