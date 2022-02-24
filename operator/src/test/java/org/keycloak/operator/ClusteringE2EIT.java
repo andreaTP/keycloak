@@ -128,6 +128,7 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
             assertThat(answer.hasNonNull("access_token")).isTrue();
 
             token.set(answer.get("access_token").asText());
+            Log.info("Token is " + token.get());
         });
 
         var endpoint = k8sclient
@@ -148,7 +149,7 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
                 String url = "http://" + ip + ":" + Constants.KEYCLOAK_SERVICE_PORT + "/realms/token-test/protocol/openid-connect/userinfo";
                 Log.info("Checking url: " + url);
 
-                var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "-H", "Authorization: bearer " + token.get(), url);
+                var curlOutput = K8sUtils.inClusterCurl(k8sclient, namespace, "-s", "-H", "Authorization: Bearer " + token.get(), url);
                 Log.info("Curl Output on access attempt: " + curlOutput);
 
                 JsonNode answer = Serialization.jsonMapper().readTree(curlOutput);
