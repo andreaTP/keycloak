@@ -90,6 +90,6 @@ public class KeycloakDiscoveryService extends OperatorManagedResource implements
 
     @Override
     protected String getName() {
-        return cr.getMetadata().getName() + "-discovery";
+        return cr.getMetadata().getName() + Constants.KEYCLOAK_DISCOVERY_SERVICE_SUFFIX;
     }
 }

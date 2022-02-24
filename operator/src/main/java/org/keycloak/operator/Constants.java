@@ -41,4 +41,5 @@ public final class Constants {
     public static final Integer KEYCLOAK_SERVICE_PORT = 8080;
     public static final String KEYCLOAK_SERVICE_PROTOCOL = "TCP";
     public static final Integer KEYCLOAK_DISCOVERY_SERVICE_PORT = 8080;
+    public static final String KEYCLOAK_DISCOVERY_SERVICE_SUFFIX = "-discovery";
 }
