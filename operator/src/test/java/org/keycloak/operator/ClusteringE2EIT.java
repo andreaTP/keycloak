@@ -5,6 +5,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.keycloak.operator.utils.CRAssert;
 import org.keycloak.operator.v2alpha1.KeycloakService;
 import org.keycloak.operator.v2alpha1.crds.Keycloak;
 import org.keycloak.operator.v2alpha1.crds.KeycloakStatusCondition;
@@ -21,14 +22,6 @@ import static org.keycloak.operator.v2alpha1.crds.KeycloakStatusCondition.READY;
 
 @QuarkusTest
 public class ClusteringE2EIT extends ClusterOperatorTest {
-
-    private KeycloakStatusCondition getCondition(List<KeycloakStatusCondition> conditions, String type) {
-        return conditions
-                .stream()
-                .filter(c -> c.getType().equals(type))
-                .findFirst()
-                .get();
-    }
 
     @Test
     public void testKeycloakScaleAsExpected() {
@@ -51,17 +44,11 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
         k8sclient.resources(Keycloak.class).inNamespace(namespace).createOrReplace(keycloak);
 
         Awaitility.await()
-                .atMost(2, MINUTES)
-                .pollDelay(5, SECONDS)
+                .atMost(1, MINUTES)
+                .pollDelay(1, SECONDS)
                 .ignoreExceptions()
-                .untilAsserted(() -> {
-                    var conditions = crSelector
-                            .get()
-                            .getStatus()
-                            .getConditions();
+                .untilAsserted(() -> CRAssert.assertKeycloakStatusCondition(crSelector.get(), READY, false));
 
-                    assertThat(getCondition(conditions, READY).getStatus()).isFalse();
-                });
         Awaitility.await()
                 .atMost(Duration.ofSeconds(5))
                 .untilAsserted(() -> assertThat(kcPodsSelector.list().getItems().size()).isEqualTo(10));
@@ -77,18 +64,11 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
                 .atMost(2, MINUTES)
                 .pollDelay(5, SECONDS)
                 .ignoreExceptions()
-                .untilAsserted(() -> {
-                    var conditions = crSelector
-                            .get()
-                            .getStatus()
-                            .getConditions();
-
-                    assertThat(getCondition(conditions, READY).getStatus()).isTrue();
-                });
+                .untilAsserted(() -> CRAssert.assertKeycloakStatusCondition(crSelector.get(), READY, true));
 
         // get the service
         var service = new KeycloakService(k8sclient, kc);
-        String url = "http://" + service.getName() + "." + namespace + ":" + KEYCLOAK_SERVICE_PORT;
+        String url = "http://" + service.getName() + "." + namespace + ":" + Constants.KEYCLOAK_SERVICE_PORT;
 
         Awaitility.await().atMost(5, MINUTES).untilAsserted(() -> {
             Log.info("Starting curl Pod to test if the realm is available");
