@@ -1,23 +1,12 @@
 package org.keycloak.operator;
 
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
-import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientException;
-import io.fabric8.kubernetes.client.extended.run.RunConfigBuilder;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import org.awaitility.Awaitility;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.keycloak.operator.utils.CRAssert;
 import org.keycloak.operator.v2alpha1.KeycloakService;
-import org.keycloak.operator.v2alpha1.crds.Keycloak;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
-import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatusCondition;
-
-import java.util.List;
-import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -31,14 +20,6 @@ import static org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatusCondi
 
 @QuarkusTest
 public class RealmImportE2EIT extends ClusterOperatorTest {
-
-    private KeycloakRealmImportStatusCondition getCondition(List<KeycloakRealmImportStatusCondition> conditions, String type) {
-        return conditions
-                .stream()
-                .filter(c -> c.getType().equals(type))
-                .findFirst()
-                .get();
-    }
 
     @Test
     public void testWorkingRealmImport() {
@@ -58,14 +39,9 @@ public class RealmImportE2EIT extends ClusterOperatorTest {
                 .pollDelay(5, SECONDS)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
-                    var conditions = crSelector
-                            .get()
-                            .getStatus()
-                            .getConditions();
-
-                    assertThat(getCondition(conditions, DONE).getStatus()).isFalse();
-                    assertThat(getCondition(conditions, STARTED).getStatus()).isTrue();
-                    assertThat(getCondition(conditions, HAS_ERRORS).getStatus()).isFalse();
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), DONE, false);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), STARTED, true);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), HAS_ERRORS, false);
                 });
 
         Awaitility.await()
@@ -73,14 +49,9 @@ public class RealmImportE2EIT extends ClusterOperatorTest {
                 .pollDelay(5, SECONDS)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
-                    var conditions = crSelector
-                            .get()
-                            .getStatus()
-                            .getConditions();
-
-                    assertThat(getCondition(conditions, DONE).getStatus()).isTrue();
-                    assertThat(getCondition(conditions, STARTED).getStatus()).isFalse();
-                    assertThat(getCondition(conditions, HAS_ERRORS).getStatus()).isFalse();
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), DONE, true);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), STARTED, false);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), HAS_ERRORS, false);
                 });
         var service = new KeycloakService(k8sclient, getDefaultKeycloakDeployment());
         String url =
@@ -109,17 +80,14 @@ public class RealmImportE2EIT extends ClusterOperatorTest {
                 .pollDelay(5, SECONDS)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
-                    var conditions = k8sclient
+                    var crSelector = k8sclient
                             .resources(KeycloakRealmImport.class)
                             .inNamespace(namespace)
-                            .withName("example-count0-kc")
-                            .get()
-                            .getStatus()
-                            .getConditions();
+                            .withName("example-count0-kc");
 
-                    assertThat(getCondition(conditions, HAS_ERRORS).getStatus()).isTrue();
-                    assertThat(getCondition(conditions, DONE).getStatus()).isFalse();
-                    assertThat(getCondition(conditions, STARTED).getStatus()).isFalse();
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), DONE, false);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), STARTED, false);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), HAS_ERRORS, true);
                 });
     }
 

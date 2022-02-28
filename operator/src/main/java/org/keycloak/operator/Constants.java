@@ -33,13 +33,13 @@ public final class Constants {
     );
 
     public static final Map<String, String> DEFAULT_DIST_CONFIG = Map.of(
+        "KC_HEALTH_ENABLED","true",
         "KC_METRICS_ENABLED","true",
-        "JGROUPS_DISCOVERY_PROTOCOL", "dns.DNS_PING",
-        "CACHE_OWNERS_COUNT", "2",
-        "CACHE_OWNERS_AUTH_SESSIONS_COUNT","2"
+        "KC_CACHE", "ispn",
+        "KC_CACHE_STACK", "kubernetes"
     );
     public static final Integer KEYCLOAK_SERVICE_PORT = 8080;
     public static final String KEYCLOAK_SERVICE_PROTOCOL = "TCP";
-    public static final Integer KEYCLOAK_DISCOVERY_SERVICE_PORT = 8080;
+    public static final Integer KEYCLOAK_DISCOVERY_SERVICE_PORT = 7800;
     public static final String KEYCLOAK_DISCOVERY_SERVICE_SUFFIX = "-discovery";
 }

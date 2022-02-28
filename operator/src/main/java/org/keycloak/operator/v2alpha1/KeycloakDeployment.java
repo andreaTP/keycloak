@@ -134,7 +134,7 @@ public class KeycloakDeployment extends OperatorManagedResource implements Statu
 
     private List<EnvVar> getEnvVars() {
         var serverConfig = new HashMap<>(Constants.DEFAULT_DIST_CONFIG);
-        serverConfig.put("JGROUPS_DISCOVERY_PROPERTIES", "dns_query=" + getName() + Constants.KEYCLOAK_DISCOVERY_SERVICE_SUFFIX +"." + getNamespace());
+        serverConfig.put("jgroups.dns.query", getName() + Constants.KEYCLOAK_DISCOVERY_SERVICE_SUFFIX +"." + getNamespace());
         if (keycloakCR.getSpec().getServerConfiguration() != null) {
             serverConfig.putAll(keycloakCR.getSpec().getServerConfiguration());
         }

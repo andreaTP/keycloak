@@ -11,6 +11,13 @@ spec:
 #    KC_DB_PASSWORD: ${secret:keycloak-db-secret:password}
     KC_DB_USERNAME: postgres
     KC_DB_PASSWORD: testpassword
+    # DEBUG: remove me
+#    KC_CACHE: ispn
+#    KC_CACHE_STACK: kubernetes
+    # jgroups.dns.dns_query: example-kc-discovery
+    # jgroups.dns.query: example-kc-discovery
+    #    JAVA_OPTS_APPEND: -Djgroups.dns.query=example-kc-discovery
+    # KC_LOG_LEVEL: INFO,org.infinispan:DEBUG,org.jgroups:DEBUG
 ---
 apiVersion: v1
 kind: Secret
