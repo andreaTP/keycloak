@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -69,6 +70,8 @@ public final class K8sUtils {
     public static void waitForKeycloakToBeReady(KubernetesClient client, Keycloak kc) {
         Log.infof("Waiting for Keycloak \"%s\"", kc.getMetadata().getName());
         Awaitility.await()
+                .pollInterval(1, SECONDS)
+                .timeout(5, MINUTES)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
                     var currentKc = client.resources(Keycloak.class).withName(kc.getMetadata().getName()).get();

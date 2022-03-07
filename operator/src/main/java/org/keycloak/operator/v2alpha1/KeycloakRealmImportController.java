@@ -35,11 +35,13 @@ import io.quarkus.logging.Log;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatus;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatusBuilder;
+import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatusCondition;
 
 import javax.inject.Inject;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.NO_FINALIZER;
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.WATCH_CURRENT_NAMESPACE;
@@ -87,7 +89,18 @@ public class KeycloakRealmImportController implements Reconciler<KeycloakRealmIm
             return UpdateControl.noUpdate();
         } else {
             realm.setStatus(status);
-            return UpdateControl.updateStatus(realm);
+
+            var notReady = realm
+                    .getStatus()
+                    .getConditions()
+                    .stream()
+                    .anyMatch(c -> c.getType().equals(KeycloakRealmImportStatusCondition.DONE) && !c.getStatus());
+
+            if (notReady) {
+                return UpdateControl.updateStatus(realm).rescheduleAfter(10, TimeUnit.SECONDS);
+            } else {
+                return UpdateControl.updateStatus(realm);
+            }
         }
     }
 

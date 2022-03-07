@@ -37,10 +37,12 @@ import org.keycloak.operator.Constants;
 import org.keycloak.operator.v2alpha1.crds.Keycloak;
 import org.keycloak.operator.v2alpha1.crds.KeycloakStatus;
 import org.keycloak.operator.v2alpha1.crds.KeycloakStatusBuilder;
+import org.keycloak.operator.v2alpha1.crds.KeycloakStatusCondition;
 
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.NO_FINALIZER;
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.WATCH_CURRENT_NAMESPACE;
@@ -103,7 +105,17 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
         }
         else {
             kc.setStatus(status);
-            return UpdateControl.updateStatus(kc);
+            var notReady = kc
+                    .getStatus()
+                    .getConditions()
+                    .stream()
+                    .anyMatch(c -> c.getType().equals(KeycloakStatusCondition.READY) && !c.getStatus());
+
+            if (notReady) {
+                return UpdateControl.updateStatus(kc).rescheduleAfter(10, TimeUnit.SECONDS);
+            } else {
+                return UpdateControl.updateStatus(kc);
+            }
         }
     }
 
