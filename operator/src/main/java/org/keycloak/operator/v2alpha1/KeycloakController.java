@@ -113,6 +113,7 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
             }
         }
         else {
+            Log.info("Setting new status:\n" + status);
             kc.setStatus(status);
             if (notReady) {
                 return UpdateControl.updateStatus(kc).rescheduleAfter(10, TimeUnit.SECONDS);

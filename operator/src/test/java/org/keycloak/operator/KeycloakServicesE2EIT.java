@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.keycloak.operator.v2alpha1.KeycloakDiscoveryService;
 import org.keycloak.operator.v2alpha1.KeycloakService;
 import org.keycloak.operator.utils.K8sUtils;
+import org.keycloak.operator.v2alpha1.crds.Keycloak;
 
 import java.util.Map;
 
@@ -15,6 +16,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 public class KeycloakServicesE2EIT extends ClusterOperatorTest {
+//    @Test
+//    public void testMainServiceDurability() {
+//        for (var i =0; i < 100; i++) {
+//            Log.info("Start new test " + i);
+//            var kc = K8sUtils.getDefaultKeycloakDeployment();
+//            K8sUtils.deployKeycloak(k8sclient, kc, true);
+//            var service = new KeycloakService(k8sclient, kc);
+//            var serviceSelector = k8sclient.services().inNamespace(namespace).withName(service.getName());
+//
+//            Log.info("Trying to delete the service");
+//            assertThat(serviceSelector.delete()).isTrue();
+//            Awaitility.await()
+//                    .untilAsserted(() -> assertThat(serviceSelector.get()).isNotNull());
+//
+//            K8sUtils.waitForKeycloakToBeReady(k8sclient, kc); // wait for reconciler to calm down to avoid race condititon
+//
+//            k8sclient.resources(Keycloak.class).inNamespace(namespace).delete();
+//
+//            Awaitility.await()
+//                    .ignoreExceptions()
+//                    .untilAsserted(() -> assertThat(k8sclient.resources(Keycloak.class).inNamespace(namespace).list().getItems().size()).isEqualTo(0));
+//        }
+//    }
+
     @Test
     public void testMainServiceDurability() {
         var kc = K8sUtils.getDefaultKeycloakDeployment();
