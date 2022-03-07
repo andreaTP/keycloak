@@ -100,17 +100,20 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
 
         Log.info("--- Reconciliation finished successfully");
 
+        var notReady = status
+                .getConditions()
+                .stream()
+                .anyMatch(c -> c.getType().equals(KeycloakStatusCondition.READY) && !c.getStatus());
+
         if (status.equals(kc.getStatus())) {
-            return UpdateControl.noUpdate();
+            if (notReady) {
+                return UpdateControl.<Keycloak>noUpdate().rescheduleAfter(10, TimeUnit.SECONDS);
+            } else {
+                return UpdateControl.noUpdate();
+            }
         }
         else {
             kc.setStatus(status);
-            var notReady = kc
-                    .getStatus()
-                    .getConditions()
-                    .stream()
-                    .anyMatch(c -> c.getType().equals(KeycloakStatusCondition.READY) && !c.getStatus());
-
             if (notReady) {
                 return UpdateControl.updateStatus(kc).rescheduleAfter(10, TimeUnit.SECONDS);
             } else {

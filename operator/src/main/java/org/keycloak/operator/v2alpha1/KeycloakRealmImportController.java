@@ -36,6 +36,7 @@ import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatus;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatusBuilder;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatusCondition;
+import org.keycloak.operator.v2alpha1.crds.KeycloakStatusCondition;
 
 import javax.inject.Inject;
 
@@ -85,16 +86,19 @@ public class KeycloakRealmImportController implements Reconciler<KeycloakRealmIm
 
         Log.info("--- Realm reconciliation finished successfully");
 
+        var notReady = status
+                .getConditions()
+                .stream()
+                .anyMatch(c -> c.getType().equals(KeycloakStatusCondition.READY) && !c.getStatus());
+
         if (status.equals(realm.getStatus())) {
-            return UpdateControl.noUpdate();
+            if (notReady) {
+                return UpdateControl.<KeycloakRealmImport>noUpdate().rescheduleAfter(10, TimeUnit.SECONDS);
+            } else {
+                return UpdateControl.noUpdate();
+            }
         } else {
             realm.setStatus(status);
-
-            var notReady = realm
-                    .getStatus()
-                    .getConditions()
-                    .stream()
-                    .anyMatch(c -> c.getType().equals(KeycloakRealmImportStatusCondition.DONE) && !c.getStatus());
 
             if (notReady) {
                 return UpdateControl.updateStatus(realm).rescheduleAfter(10, TimeUnit.SECONDS);
