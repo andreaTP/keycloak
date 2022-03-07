@@ -414,11 +414,11 @@ public class KeycloakDeployment extends OperatorManagedResource implements Statu
                 .collect(Collectors.toList());
     }
 
-    public void updateStatus(KeycloakStatusBuilder status) {
+    public boolean updateStatus(KeycloakStatusBuilder status) {
         validatePodTemplate(status);
         if (existingDeployment == null) {
             status.addNotReadyMessage("No existing Deployment found, waiting for creating a new one");
-            return;
+            return true;
         }
 
         var replicaFailure = existingDeployment.getStatus().getConditions().stream()
@@ -426,14 +426,17 @@ public class KeycloakDeployment extends OperatorManagedResource implements Statu
         if (replicaFailure.isPresent()) {
             status.addNotReadyMessage("Deployment failures");
             status.addErrorMessage("Deployment failure: " + replicaFailure.get());
-            return;
+            return true;
         }
 
         if (existingDeployment.getStatus() == null
                 || existingDeployment.getStatus().getReadyReplicas() == null
                 || existingDeployment.getStatus().getReadyReplicas() < keycloakCR.getSpec().getInstances()) {
             status.addNotReadyMessage("Waiting for more replicas");
+            return true;
         }
+
+        return false;
     }
 
 //    public Set<String> getConfigSecretsNames() {

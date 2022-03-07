@@ -86,24 +86,26 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
         // TODO use caches in secondary resources; this is a workaround for https://github.com/java-operator-sdk/java-operator-sdk/issues/830
         // KeycloakDeployment deployment = new KeycloakDeployment(client, config, kc, context.getSecondaryResource(Deployment.class).orElse(null));
         var kcDeployment = new KeycloakDeployment(client, config, kc, null);
-        kcDeployment.updateStatus(statusBuilder);
+        var check1 = kcDeployment.updateStatus(statusBuilder);
         kcDeployment.createOrUpdateReconciled();
 
         var kcService = new KeycloakService(client, kc);
-        kcService.updateStatus(statusBuilder);
+        var check2 = kcService.updateStatus(statusBuilder);
         kcService.createOrUpdateReconciled();
         var kcDiscoveryService = new KeycloakDiscoveryService(client, kc);
-        kcDiscoveryService.updateStatus(statusBuilder);
+        var check3 = kcDiscoveryService.updateStatus(statusBuilder);
         kcDiscoveryService.createOrUpdateReconciled();
 
         var status = statusBuilder.build();
 
         Log.info("--- Reconciliation finished successfully");
 
-        var notReady = status
-                .getConditions()
-                .stream()
-                .anyMatch(c -> c.getType().equals(KeycloakStatusCondition.READY) && !c.getStatus());
+        var notReady = check1 || check2 || check3;
+        Log.info("Not READY is:\n" + notReady);
+//                status
+//                .getConditions()
+//                .stream()
+//                .anyMatch(c -> c.getType().equals(KeycloakStatusCondition.READY) && !c.getStatus());
 
         if (status.equals(kc.getStatus())) {
             if (notReady) {

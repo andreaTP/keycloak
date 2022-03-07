@@ -81,11 +81,12 @@ public class KeycloakDiscoveryService extends OperatorManagedResource implements
                 .get();
     }
 
-    public void updateStatus(KeycloakStatusBuilder status) {
+    public boolean updateStatus(KeycloakStatusBuilder status) {
         if (existingService == null) {
             status.addNotReadyMessage("No existing Discovery Service found, waiting for creating a new one");
-            return;
+            return true;
         }
+        return false;
     }
 
     @Override
