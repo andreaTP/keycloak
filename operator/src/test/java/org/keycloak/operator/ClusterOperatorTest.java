@@ -114,9 +114,11 @@ public abstract class ClusterOperatorTest {
       var deploymentCRD = k8sclient.load(new FileInputStream(TARGET_KUBERNETES_GENERATED_YML_FOLDER + "keycloaks.keycloak.org-v1.yml"));
       deploymentCRD.createOrReplace();
       deploymentCRD.waitUntilReady(5, TimeUnit.SECONDS);
+      assertThat(deploymentCRD.get().size() > 0);
       var realmImportCRD = k8sclient.load(new FileInputStream(TARGET_KUBERNETES_GENERATED_YML_FOLDER + "keycloakrealmimports.keycloak.org-v1.yml"));
       realmImportCRD.createOrReplace();
       realmImportCRD.waitUntilReady(5, TimeUnit.SECONDS);
+      assertThat(realmImportCRD.get().size() > 0);
     } catch (Exception e) {
       Log.warn("Failed to create Keycloak CRD, retrying", e);
       createCRDs();
@@ -211,20 +213,15 @@ public abstract class ClusterOperatorTest {
 
   @AfterAll
   public static void after() throws FileNotFoundException {
+    Log.info("Deleting namespace : " + namespace);
+    assertThat(k8sclient.namespaces().withName(namespace).delete()).isTrue();
 
     if (operatorDeployment == OperatorDeployment.local) {
       Log.info("Stopping Operator");
       operator.stop();
-
-      Log.info("Creating new K8s Client");
-      // create a new client bc operator has closed the old one
-      createK8sClient();
     } else {
       cleanRBACresourcesAndOperatorDeployment();
     }
-
-    Log.info("Deleting namespace : " + namespace);
-    assertThat(k8sclient.namespaces().withName(namespace).delete()).isTrue();
     k8sclient.close();
   }
 }
