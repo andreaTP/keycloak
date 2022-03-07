@@ -78,6 +78,8 @@ public final class K8sUtils {
                             .withName(kc.getMetadata().getName())
                             .get();
 
+                    Log.infof("Current status is:\n %s", currentKc.getStatus());
+
                     CRAssert.assertKeycloakStatusCondition(currentKc, KeycloakStatusCondition.READY, true);
                     CRAssert.assertKeycloakStatusCondition(currentKc, KeycloakStatusCondition.HAS_ERRORS, false);
                 });

@@ -5,10 +5,10 @@ on: [push, pull_request]
 env:
   JDK_VERSION: 11
 
-concurrency:
-  # Only run once for latest commit per ref and cancel other (previous) runs.
-  group: ci-operator-keycloak-${{ github.ref }}
-  cancel-in-progress: true
+#concurrency:
+#  # Only run once for latest commit per ref and cancel other (previous) runs.
+#  group: ci-operator-keycloak-${{ github.ref }}
+#  cancel-in-progress: true
 
 jobs:
   build:
