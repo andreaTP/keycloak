@@ -23,7 +23,6 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.extended.run.RunConfigBuilder;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.fabric8.kubernetes.client.utils.Serialization;
-import io.quarkus.kubernetes.client.runtime.KubernetesClientUtils;
 import io.quarkus.logging.Log;
 import org.awaitility.Awaitility;
 import org.keycloak.operator.v2alpha1.crds.Keycloak;
@@ -36,7 +35,6 @@ import java.util.UUID;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Vaclav Muzikar <vmuzikar@redhat.com>
@@ -56,7 +54,7 @@ public final class K8sUtils {
     }
 
     public static void deployKeycloak(KubernetesClient client, Keycloak kc, boolean waitUntilReady) {
-        client.resources(Keycloak.class).createOrReplace(kc);
+        client.resources(Keycloak.class).inNamespace(kc.getMetadata().getNamespace()).createOrReplace(kc);
 
         if (waitUntilReady) {
             waitForKeycloakToBeReady(client, kc);
@@ -74,7 +72,12 @@ public final class K8sUtils {
                 .timeout(5, MINUTES)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
-                    var currentKc = client.resources(Keycloak.class).withName(kc.getMetadata().getName()).get();
+                    var currentKc = client
+                            .resources(Keycloak.class)
+                            .inNamespace(kc.getMetadata().getNamespace())
+                            .withName(kc.getMetadata().getName())
+                            .get();
+
                     CRAssert.assertKeycloakStatusCondition(currentKc, KeycloakStatusCondition.READY, true);
                     CRAssert.assertKeycloakStatusCondition(currentKc, KeycloakStatusCondition.HAS_ERRORS, false);
                 });

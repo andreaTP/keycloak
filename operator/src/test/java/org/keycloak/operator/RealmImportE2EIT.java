@@ -5,8 +5,12 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.keycloak.operator.utils.CRAssert;
+import org.keycloak.operator.utils.K8sUtils;
 import org.keycloak.operator.v2alpha1.KeycloakService;
+import org.keycloak.operator.v2alpha1.crds.Keycloak;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
+import org.keycloak.operator.v2alpha1.crds.KeycloakStatusBuilder;
+import org.keycloak.operator.v2alpha1.crds.KeycloakStatusCondition;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -53,11 +57,25 @@ public class RealmImportE2EIT extends ClusterOperatorTest {
                     CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), STARTED, false);
                     CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), HAS_ERRORS, false);
                 });
+
+        Awaitility.await()
+                .atMost(3, MINUTES)
+                .pollDelay(5, SECONDS)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    var defaultKc = K8sUtils.getDefaultKeycloakDeployment();
+                    var kc = k8sclient
+                            .resources(Keycloak.class)
+                            .inNamespace(defaultKc.getMetadata().getNamespace())
+                            .withName(defaultKc.getMetadata().getName())
+                            .get();
+                    CRAssert.assertKeycloakStatusCondition(kc, KeycloakStatusCondition.READY, true);
+                });
         var service = new KeycloakService(k8sclient, getDefaultKeycloakDeployment());
         String url =
                 "http://" + service.getName() + "." + namespace + ":" + KEYCLOAK_SERVICE_PORT + "/realms/count0";
 
-        Awaitility.await().atMost(5, MINUTES).untilAsserted(() -> {
+        Awaitility.await().pollInterval(1, SECONDS).atMost(5, MINUTES).untilAsserted(() -> {
             Log.info("Starting curl Pod to test if the realm is available");
             Log.info("Url: '" + url + "'");
             String curlOutput = inClusterCurl(k8sclient, namespace, url);

@@ -1,6 +1,7 @@
 name: Keycloak CI
 
-on: [push, pull_request]
+#TODO: restore me
+#on: [push, pull_request]
 
 env:
   DEFAULT_JDK_VERSION: 11

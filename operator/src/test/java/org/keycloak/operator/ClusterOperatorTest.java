@@ -187,7 +187,7 @@ public abstract class ClusterOperatorTest {
   @AfterEach
   public void cleanup() {
     Log.info("Deleting Keycloak CR");
-    k8sclient.resources(Keycloak.class).delete();
+    k8sclient.resources(Keycloak.class).inNamespace(namespace).delete();
     Awaitility.await()
             .untilAsserted(() -> {
               var kcDeployments = k8sclient
@@ -198,6 +198,14 @@ public abstract class ClusterOperatorTest {
                       .list()
                       .getItems();
               assertThat(kcDeployments.size()).isEqualTo(0);
+
+              var kcCRs = k8sclient
+                      .resources(Keycloak.class)
+                      .inNamespace(namespace)
+                      .list()
+                      .getItems();
+
+              assertThat(kcCRs.size()).isEqualTo(0);
             });
   }
 
