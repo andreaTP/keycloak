@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit;
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.NO_FINALIZER;
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.WATCH_CURRENT_NAMESPACE;
 
-@ControllerConfiguration(namespaces = WATCH_CURRENT_NAMESPACE, finalizerName = NO_FINALIZER)
+@ControllerConfiguration(namespaces = WATCH_CURRENT_NAMESPACE, finalizerName = NO_FINALIZER, generationAwareEventProcessing = false)
 public class KeycloakRealmImportController implements Reconciler<KeycloakRealmImport>, EventSourceInitializer<KeycloakRealmImport>, ErrorStatusHandler<KeycloakRealmImport> {
 
     @Inject
