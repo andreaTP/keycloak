@@ -52,14 +52,13 @@ public class KeycloakService extends OperatorManagedResource implements StatusUp
 
     @Override
     protected Optional<HasMetadata> getReconciledResource() {
-        var service = fetchExistingService();
-        if (service == null) {
-            service = newService();
+        if (this.existingService == null) {
+            return Optional.of(newService());
         } else {
+            var service = this.existingService;
             service.setSpec(getServiceSpec());
+            return Optional.of(service);
         }
-
-        return Optional.of(service);
     }
 
     private Service newService() {

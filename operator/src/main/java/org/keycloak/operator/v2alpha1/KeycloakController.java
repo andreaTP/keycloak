@@ -86,15 +86,17 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
         // TODO use caches in secondary resources; this is a workaround for https://github.com/java-operator-sdk/java-operator-sdk/issues/830
         // KeycloakDeployment deployment = new KeycloakDeployment(client, config, kc, context.getSecondaryResource(Deployment.class).orElse(null));
         var kcDeployment = new KeycloakDeployment(client, config, kc, null);
-        var check1 = kcDeployment.updateStatus(statusBuilder);
         kcDeployment.createOrUpdateReconciled();
+        var check1 = kcDeployment.updateStatus(statusBuilder);
+
 
         var kcService = new KeycloakService(client, kc);
-        var check2 = kcService.updateStatus(statusBuilder);
         kcService.createOrUpdateReconciled();
+        var check2 = kcService.updateStatus(statusBuilder);
+
         var kcDiscoveryService = new KeycloakDiscoveryService(client, kc);
-        var check3 = kcDiscoveryService.updateStatus(statusBuilder);
         kcDiscoveryService.createOrUpdateReconciled();
+        var check3 = kcDiscoveryService.updateStatus(statusBuilder);
 
         var status = statusBuilder.build();
 
