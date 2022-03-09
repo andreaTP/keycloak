@@ -41,6 +41,13 @@ jobs:
           kubernetes version: v1.22.3
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
+          start args: '--addons=ingress'
+
+      - name: Run minikube tunnel
+        run: |
+          echo 'Running minikube tunnel'
+          minikube tunnel &> /dev/null &
+        shell: bash
 
       - name: Build the Keycloak Docker image
         run: |

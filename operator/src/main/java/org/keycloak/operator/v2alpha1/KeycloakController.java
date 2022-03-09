@@ -18,6 +18,7 @@ package org.keycloak.operator.v2alpha1;
 
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.networking.v1.Ingress;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -66,10 +67,26 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
                         .withLabels(Constants.DEFAULT_LABELS)
                         .runnableInformer(0);
 
-        EventSource deploymentEvent = new InformerEventSource<>(deploymentInformer, Mappers.fromOwnerReference());
-        EventSource servicesEvent = new InformerEventSource<>(servicesInformer, Mappers.fromOwnerReference());
+        SharedIndexInformer<Ingress> ingressesInformer =
+                client.network().v1().ingresses().inNamespace(context.getConfigurationService().getClientConfiguration().getNamespace())
+                        .withLabels(Constants.DEFAULT_LABELS)
+                        .runnableInformer(0);
 
-        return List.of(deploymentEvent, servicesEvent);
+        EventSource deploymentEvent = new InformerEventSource<>(deploymentInformer, Mappers.fromOwnerReference());
+        EventSource servicesEvent = new InformerEventSource<>(servicesInformer, Mappers.fromOwnerReference()){
+            @Override
+            public String name() {
+                return super.name() + "-services";
+            }
+        };
+        EventSource ingressesEvent = new InformerEventSource<>(servicesInformer, Mappers.fromOwnerReference()) {
+            @Override
+            public String name() {
+                return super.name() + "-ingresses";
+            }
+        };
+
+        return List.of(deploymentEvent, servicesEvent, ingressesEvent);
     }
 
     @Override
@@ -93,6 +110,12 @@ public class KeycloakController implements Reconciler<Keycloak>, EventSourceInit
         var kcDiscoveryService = new KeycloakDiscoveryService(client, kc);
         kcDiscoveryService.updateStatus(statusBuilder);
         kcDiscoveryService.createOrUpdateReconciled();
+
+        if (!kc.getSpec().isDefaultIngressDisabled()) {
+            var kcIngress = new KeycloakIngress(client, kc);
+            kcIngress.updateStatus(statusBuilder);
+            kcIngress.createOrUpdateReconciled();
+        }
 
         var status = statusBuilder.build();
 
