@@ -5,10 +5,10 @@ on: [push, pull_request]
 env:
   JDK_VERSION: 11
 
-concurrency:
-  # Only run once for latest commit per ref and cancel other (previous) runs.
-  group: ci-operator-keycloak-${{ github.ref }}
-  cancel-in-progress: true
+#concurrency:
+#  # Only run once for latest commit per ref and cancel other (previous) runs.
+#  group: ci-operator-keycloak-${{ github.ref }}
+#  cancel-in-progress: true
 
 jobs:
   build:
@@ -32,7 +32,8 @@ jobs:
 
       - name: Create the Keycloak distribution
         run: |
-          mvn clean install -Pdistribution -DskipTests -DskipExamples -DskipTestsuite
+#          mvn clean install -Pdistribution -DskipTests -DskipExamples -DskipTestsuite
+          mvn clean install -DskipTests -DskipExamples -DskipTestsuite
 
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
@@ -49,28 +50,30 @@ jobs:
           minikube tunnel &> /dev/null &
         shell: bash
 
-      - name: Build the Keycloak Docker image
-        run: |
-          cd quarkus
-          cp dist/target/keycloak-*.tar.gz container/
-          cd container
-          eval $(minikube -p minikube docker-env)
-          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
+#      - name: Build the Keycloak Docker image
+#        run: |
+#          cd quarkus
+#          cp dist/target/keycloak-*.tar.gz container/
+#          cd container
+#          eval $(minikube -p minikube docker-env)
+#          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
       - name: Test operator running locally
         working-directory: operator
         run: |
           mvn clean verify \
-              -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=keycloak:${GITHUB_SHA} \
-              -Doperator.keycloak.image-pull-policy=Never
+              -Dit.test=KeycloakIngressE2EIT \
+              -Dquarkus.kubernetes.deployment-target=kubernetes
+#          \
+#              -Doperator.keycloak.image=keycloak:${GITHUB_SHA} \
+#              -Doperator.keycloak.image-pull-policy=Never
 
-      - name: Test operator running in cluster
-        working-directory: operator
-        run: |
-          eval $(minikube -p minikube docker-env)
-          mvn clean verify \
-              -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=test \
-              -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
-              --no-transfer-progress -Dtest.operator.deployment=remote
+#      - name: Test operator running in cluster
+#        working-directory: operator
+#        run: |
+#          eval $(minikube -p minikube docker-env)
+#          mvn clean verify \
+#              -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=test \
+#              -Dquarkus.kubernetes.deployment-target=kubernetes \
+#              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
+#              --no-transfer-progress -Dtest.operator.deployment=remote
