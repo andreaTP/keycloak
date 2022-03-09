@@ -49,6 +49,9 @@ jobs:
           minikube tunnel &> /dev/null &
         shell: bash
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Test operator running locally
         working-directory: operator
         run: |
