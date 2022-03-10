@@ -43,11 +43,11 @@ jobs:
           driver: docker
           start args: '--addons=ingress'
 
-      - name: Run minikube tunnel
-        run: |
-          echo 'Running minikube tunnel'
-          minikube tunnel &> /dev/null &
-        shell: bash
+      #      - name: Run minikube tunnel
+      #        run: |
+      #          echo 'Running minikube tunnel'
+      #          minikube tunnel &> /dev/null &
+      #        shell: bash
 
       # TODO: remove me
       - name: Setup tmate session
