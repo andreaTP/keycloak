@@ -49,6 +49,7 @@ jobs:
           minikube tunnel &> /dev/null &
         shell: bash
 
+      # TODO: remove me
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
 
