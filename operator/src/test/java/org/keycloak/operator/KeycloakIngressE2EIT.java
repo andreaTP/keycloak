@@ -39,7 +39,7 @@ public class KeycloakIngressE2EIT extends ClusterOperatorTest {
                 .ignoreExceptions()
                 .untilAsserted(() -> {
                     var output = RestAssured.given()
-                            .get("http://localhost:80/realms/master")
+                            .get("http://" + kubernetesIp + ":80/realms/master")
                             .body()
                             .jsonPath()
                             .getString("realm");
@@ -59,7 +59,7 @@ public class KeycloakIngressE2EIT extends ClusterOperatorTest {
                 .untilAsserted(() -> {
                     var output = RestAssured.given()
                             .relaxedHTTPSValidation()
-                            .get("https://localhost:443/realms/master")
+                            .get("https://" + kubernetesIp + ":443/realms/master")
                             .body()
                             .jsonPath()
                             .getString("realm");

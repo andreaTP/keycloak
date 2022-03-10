@@ -49,13 +49,11 @@ jobs:
       #          minikube tunnel &> /dev/null &
       #        shell: bash
 
-      # TODO: remove me
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      #      # TODO: remove me
+      #      - name: Setup tmate session
+      #        uses: mxschmitt/action-tmate@v3
 
       - name: Test operator running locally
         working-directory: operator
         run: |
-          mvn clean verify \
-              -Dit.test=KeycloakIngressE2EIT \
-              -Dquarkus.kubernetes.deployment-target=kubernetes
+          mvn clean verify -Dit.test=KeycloakIngressE2EIT -Dquarkus.kubernetes.deployment-target=kubernetes -Dquarkus.kubernetes.ip=$(minikube ip)
