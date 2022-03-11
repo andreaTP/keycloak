@@ -56,7 +56,6 @@ jobs:
       - name: Build the operator Docker image
         working-directory: operator
         run: |
-          eval $(minikube -p minikube docker-env)
           mvn clean package \
               -Dquarkus.container-image.registry=docker.io \
               -Dquarkus.container-image.group=keycloak \
