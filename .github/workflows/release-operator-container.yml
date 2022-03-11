@@ -22,7 +22,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: quay.io/keycloak/keycloak-operator
+          images: docker.io/andreatp/keycloak-operator
+          # images: quay.io/keycloak/keycloak-operator
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -56,12 +57,9 @@ jobs:
       - name: Build the operator Docker image
         working-directory: operator
         run: |
-          echo ${{ steps.meta.outputs.tags }} | xargs -I {} \
+          echo "${{ steps.meta.outputs.tags }}" | xargs -I {} \
           mvn clean package \
               -Dquarkus.container-image.image={} \
-              -Dquarkus.container-image.registry=docker.io \
-              -Dquarkus.container-image.group=keycloak \
-              -Dquarkus.container-image.name=keycloak-operator \
               -Dquarkus.container-image.build=true \
               -Dquarkus.container-image.push=true
 
