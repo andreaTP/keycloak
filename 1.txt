@@ -1,0 +1,3 @@
+quay.io/keycloak/keycloak-operator:3.4.5
+quay.io/keycloak/keycloak-operator:3.4
+quay.io/keycloak/keycloak-operator:latest

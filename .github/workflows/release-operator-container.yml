@@ -56,14 +56,14 @@ jobs:
       - name: Build the operator Docker image
         working-directory: operator
         run: |
+          echo ${{ steps.meta.outputs.tags }} | xargs -I {} \
           mvn clean package \
+              -Dquarkus.container-image.image={ steps.meta.outputs.tags } \
               -Dquarkus.container-image.registry=docker.io \
               -Dquarkus.container-image.group=keycloak \
               -Dquarkus.container-image.name=keycloak-operator \
               -Dquarkus.container-image.build=true \
-              -Dquarkus.container-image.push=true \
-              -Dquarkus.container-image.tag=latest \
-              -Dquarkus.container-image.additional-tags=${{ steps.meta.outputs.tags }}
+              -Dquarkus.container-image.push=true
 
     # - name: Build the container images
     #   run: |
