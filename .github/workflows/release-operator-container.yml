@@ -58,7 +58,7 @@ jobs:
         run: |
           echo ${{ steps.meta.outputs.tags }} | xargs -I {} \
           mvn clean package \
-              -Dquarkus.container-image.image={ steps.meta.outputs.tags } \
+              -Dquarkus.container-image.image={} \
               -Dquarkus.container-image.registry=docker.io \
               -Dquarkus.container-image.group=keycloak \
               -Dquarkus.container-image.name=keycloak-operator \
