@@ -12,7 +12,7 @@ env:
 
 jobs:
   publish:
-    if: github.repository == 'keycloak/keycloak'
+    # if: github.repository == 'keycloak/keycloak'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,7 +22,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: quay.io/keycloak/keycloak-operator
+          images: docker.io/andreatp/keycloak-operator
+          # images: quay.io/keycloak/keycloak-operator
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -31,7 +32,8 @@ jobs:
       - name: Login to Quay
         uses: docker/login-action@v1
         with:
-          registry: quay.io
+          registry: docker.io
+          # registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
 
@@ -50,7 +52,7 @@ jobs:
 
       - name: Build locally Keycloak artifacts to avoid depending on Maven
         run: |
-          mvn clean install -DskipTests -DskipExamples -DskipTestsuite
+          mvn -P operator -pl operator -am clean package -DskipTests
 
       - name: Build the operator Docker image
         working-directory: operator
