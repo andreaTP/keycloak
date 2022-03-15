@@ -31,6 +31,7 @@ import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
+import io.quarkiverse.operatorsdk.csv.runtime.CSVMetadata;
 import io.quarkus.logging.Log;
 import org.keycloak.operator.Config;
 import org.keycloak.operator.Constants;
@@ -47,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.NO_FINALIZER;
 import static io.javaoperatorsdk.operator.api.reconciler.Constants.WATCH_CURRENT_NAMESPACE;
 
+@CSVMetadata( name = "keycloak-operator", provider = @CSVMetadata.Provider( name = "Red Hat"))
 // TODO: remove "generationAwareEventProcessing = false" when the race condition is fixed
 @ControllerConfiguration(namespaces = WATCH_CURRENT_NAMESPACE, finalizerName = NO_FINALIZER, generationAwareEventProcessing = false)
 public class KeycloakController implements Reconciler<Keycloak>, EventSourceInitializer<Keycloak>, ErrorStatusHandler<Keycloak> {
