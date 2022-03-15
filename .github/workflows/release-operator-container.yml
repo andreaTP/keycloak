@@ -52,7 +52,7 @@ jobs:
 
       - name: Build locally Keycloak artifacts to avoid depending on Maven
         run: |
-          mvn -P operator -pl operator -am clean package -DskipTests
+          mvn -P operator -pl operator -am clean install -DskipTests
 
       - name: Build the operator Docker image
         working-directory: operator
