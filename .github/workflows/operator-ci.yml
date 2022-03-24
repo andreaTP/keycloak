@@ -134,8 +134,8 @@ jobs:
           ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
 
 # Now we have to install the example CR, specifying the keycloak image?
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - name: Install the operator with OLM
         working-directory: operator
