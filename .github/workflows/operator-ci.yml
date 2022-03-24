@@ -88,6 +88,7 @@ jobs:
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
               -DskipTests
           # TODO check if this is really needed
+          # probably not
           kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
           kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
@@ -120,6 +121,10 @@ jobs:
       - name: Re-tag and push docker images
         run: |
           VERSION=0.0.1-${GITHUB_RUN_ID}
+          # This is the last step where we need to share the docker env with minikube
+          docker images
+          eval $(minikube -p minikube docker-env)
+          docker images
           docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
           docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
           docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak:0.0.1-${GITHUB_RUN_ID}
