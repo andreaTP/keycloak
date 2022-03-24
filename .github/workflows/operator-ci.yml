@@ -47,7 +47,7 @@ jobs:
           kubernetes version: v1.22.3
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
-          start args: '--addons=ingress'
+          start args: "--addons=ingress --insecure-registry=${{ secrets.TEST_DOCKER_REGISTRY }}"
 
       - name: Build the Keycloak Docker image
         run: |
@@ -121,10 +121,7 @@ jobs:
       - name: Re-tag and push docker images
         run: |
           VERSION=0.0.1-${GITHUB_RUN_ID}
-          # This is the last step where we need to share the docker env with minikube
-          docker images
           eval $(minikube -p minikube docker-env)
-          docker images
           docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
           docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
           docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak:0.0.1-${GITHUB_RUN_ID}
@@ -132,7 +129,9 @@ jobs:
 
       - name: Install the operator with OLM
         working-directory: operator
-        run: ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
+        run: |
+          eval $(minikube -p minikube docker-env)
+          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
 
 # Now we have to install the example CR, specifying the keycloak image?
       - name: Setup tmate session
