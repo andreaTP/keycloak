@@ -1,14 +1,16 @@
 #! /bin/bash
-set -x
+set -euxo pipefail
 
 VERSION=$1
 BUNDLE_IMAGE=$2
 
-rm -rf olm/catalog
-mkdir -p olm/catalog/test-catalog
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+rm -rf $SCRIPT_DIR/../olm/catalog
+mkdir -p $SCRIPT_DIR/../olm/catalog/test-catalog
 
 (
-  cd olm/catalog
+  cd $SCRIPT_DIR/../olm/catalog
 
   opm generate dockerfile test-catalog
 

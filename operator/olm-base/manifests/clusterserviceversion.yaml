@@ -104,6 +104,8 @@ spec:
                             fieldPath: metadata.name
                       - name: OPERATOR_NAME
                         value: keycloak-operator
+                      - name: "KUBERNETES_BACKWARDSCOMPATIBILITYINTERCEPTOR_DISABLE"
+                        value: "true"
                     image: quay.io/keycloak/keycloak-operator:REPLACE_ME_VERSION
                     imagePullPolicy: Always
                     name: keycloak-operator

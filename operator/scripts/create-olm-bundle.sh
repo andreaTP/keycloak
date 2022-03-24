@@ -1,5 +1,5 @@
 #! /bin/bash
-set -x
+set -euxo pipefail
 
 VERSION=$1
 REPLACES_VERSION=$2
