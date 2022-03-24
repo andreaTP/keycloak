@@ -81,6 +81,9 @@ jobs:
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
               -DskipTests
+          # TODO check if this is really needed
+          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
+          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
       # Test the OLM bundle
       - name: Install OPM
@@ -93,13 +96,13 @@ jobs:
       - name: Install Yq
         run: sudo snap install yq
 
-      - name: Install Operator Lifecycle Manager and Operator SDK into Kind
+      - name: Install Operator Lifecycle Manager using Operator SDK
         run: operator-sdk olm install
 
-      - name: Install the operator CRDs
-        run: |
-          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
-          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+      # - name: Install the operator CRDs
+      #   run: |
+      #     kubectl apply -f operator/target/kubernetes/keycloaks.keycloak.org-v1.yml
+      #     kubectl apply -f operator/target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
       - name: Login to docker registry
         uses: docker/login-action@v1.14.1
@@ -124,5 +127,24 @@ jobs:
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
 
-# add a retention policy here:
-# https://github.com/snok/container-retention-policy
+      - name: Install the operator with OLM
+        working-directory: operator
+        run: ./scripts/install-keycloak-operator.sh
+
+      - name: Wait for the deployment to be ready
+        run: |
+          kubectl wait --for=condition=available --timeout=600s deployment/example-kc
+
+      - name: Clean up the container registry
+        # uses: snok/container-retention-policy@v1.4.1
+        uses: snok/container-retention-policy@fdd5728f5b6918fbc30e24e0ca78ff1e6b378ea4
+        with:
+          image-names: keycloak, keycloak-operator, keycloak-operator-bundle, keycloak-test-catalog
+          # cut-off: 1 week ago UTC
+          # TO TEST:
+          cut-off: one hour ago UTC
+          account-type: personal
+          # TODO: the following should be enabled instead before merging
+          # account-type: org
+          # org-name: keycloak
+          token: ${{ secrets.PAT }}
