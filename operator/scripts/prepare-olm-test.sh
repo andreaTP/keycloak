@@ -30,6 +30,3 @@ $SCRIPT_DIR/create-olm-test-catalog.sh $VERSION $DOCKER_REGISTRY/keycloak-operat
 
 # Create testing resources
 $SCRIPT_DIR/create-olm-test-resources.sh $VERSION $DOCKER_REGISTRY
-
-# Install the operator using the test resources
-$SCRIPT_DIR/install-keycloak-operator.sh
