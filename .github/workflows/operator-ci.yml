@@ -51,22 +51,77 @@ jobs:
           eval $(minikube -p minikube docker-env)
           docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
-      - name: Test operator running locally
-        working-directory: operator
-        run: |
-          mvn clean verify \
-              -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=keycloak:${GITHUB_SHA} \
-              -Doperator.keycloak.image-pull-policy=Never \
-              -Dtest.operator.kubernetes.ip=$(minikube ip)
+      # - name: Test operator running locally
+      #   working-directory: operator
+      #   run: |
+      #     mvn clean verify \
+      #         -Dquarkus.kubernetes.deployment-target=kubernetes \
+      #         -Doperator.keycloak.image=keycloak:${GITHUB_SHA} \
+      #         -Doperator.keycloak.image-pull-policy=Never \
+      #         -Dtest.operator.kubernetes.ip=$(minikube ip)
 
+      # - name: Test operator running in cluster
+      #   working-directory: operator
+      #   run: |
+      #     eval $(minikube -p minikube docker-env)
+      #     mvn clean verify \
+      #         -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=test \
+      #         -Dquarkus.kubernetes.deployment-target=kubernetes \
+      #         -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
+      #         --no-transfer-progress -Dtest.operator.deployment=remote \
+      #         -Dtest.operator.kubernetes.ip=$(minikube ip)
+
+      # TODO: remove me - temporary to reduce CI time
       - name: Test operator running in cluster
         working-directory: operator
         run: |
           eval $(minikube -p minikube docker-env)
           mvn clean verify \
-              -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=test \
+              -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
-              --no-transfer-progress -Dtest.operator.deployment=remote \
-              -Dtest.operator.kubernetes.ip=$(minikube ip)
+              -DskipTests
+
+      # Test the OLM bundle
+      - name: Install OPM
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "github"
+          opm: "1.21.0"
+          operator-sdk: "1.18.1"
+      
+      - name: Install Yq
+        run: snap install yq
+
+      - name: Install Operator Lifecycle Manager and Operator SDK into Kind
+        run: operator-sdk olm install
+
+      - name: Install the operator CRDs
+        run: |
+          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
+          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+
+      - name: Login to docker registry
+        uses: docker/login-action@v1.14
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Re-tag and push docker images
+        run: |
+          VERSION=0.0.1-${GITHUB_RUN_ID}
+          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
+          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak:0.0.1-${GITHUB_RUN_ID}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak:0.0.1-${GITHUB_RUN_ID}
+
+      - name: Install the operator with OLM
+        working-directory: operator
+        run: ./scripts/test-olm-bundle.sh ${{ secrets.TEST_DOCKER_REGISTRY }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
+# add a retention policy here:
+# https://github.com/snok/container-retention-policy
