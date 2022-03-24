@@ -1,7 +1,9 @@
 #! /bin/bash
-set -x
+set -euxo pipefail
 
-# Delete the default catalog
-kubectl delete catalogsources operatorhubio-catalog -n olm | true
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-kubectl apply -f olm/testing-resources
+# Delete the default catalog if it exists
+sh -c "kubectl delete catalogsources operatorhubio-catalog -n olm | true"
+
+kubectl apply -f $SCRIPT_DIR/../olm/testing-resources
