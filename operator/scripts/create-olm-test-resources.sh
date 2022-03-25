@@ -48,4 +48,8 @@ spec:
   source: test-catalog
   sourceNamespace: default
   startingCSV: keycloak-operator.v$VERSION
+  config:
+    env:
+    - name: "OPERATOR_KEYCLOAK_IMAGE"
+      value: "$DOCKER_REGISTRY/keycloak:$VERSION"
 EOF

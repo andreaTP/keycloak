@@ -17,29 +17,47 @@ concurrency:
 
 jobs:
   build:
-    name: Build
+    name: Build distribution
     if: ${{ ( github.event_name != 'schedule' ) || ( github.event_name == 'schedule' && github.repository == 'keycloak/keycloak' ) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Update maven settings
         run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v2
         with:
+          distribution: 'temurin'
           java-version: ${{ env.JDK_VERSION }}
-      - name: Cache Maven packages
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-          key: cache-1-${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: cache-1-${{ runner.os }}-m2
-
+          cache: 'maven'
       - name: Create the Keycloak distribution
         run: |
           mvn clean install -Pdistribution -DskipTests -DskipExamples -DskipTestsuite
 
+      - name: Store Keycloak distribution
+        uses: actions/upload-artifact@v3
+        with:
+          name: keycloak-distribution
+          retention-days: 1
+          path: quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz
+
+  test-local:
+    name: Test local
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update maven settings
+        run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JDK_VERSION }}
+          cache: 'maven'
+      - name: Download built keycloak distribution
+        uses: actions/download-artifact@v3
+        with:
+          name: keycloak-distribution
+          path: quarkus/dist/target/
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
@@ -48,14 +66,12 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
           start args: '--addons=ingress'
-
       - name: Build the Keycloak Docker image
+        working-directory: quarkus/container
         run: |
-          cd quarkus
-          cp dist/target/keycloak-*.tar.gz container/
-          cd container
+          cp ../dist/target/keycloak-*.tar.gz ./
           eval $(minikube -p minikube docker-env)
-          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
+          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
       - name: Test operator running locally
         working-directory: operator
@@ -66,48 +82,110 @@ jobs:
               -Doperator.keycloak.image-pull-policy=Never \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
+  test-remote:
+    name: Test remote
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update maven settings
+        run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JDK_VERSION }}
+          cache: 'maven'
+      - name: Download built keycloak distribution
+        uses: actions/download-artifact@v3
+        with:
+          name: keycloak-distribution
+          path: quarkus/dist/target/
+      - name: Setup Minikube-Kubernetes
+        uses: manusa/actions-setup-minikube@v2.4.3
+        with:
+          minikube version: v1.24.0
+          kubernetes version: v1.22.3
+          github token: ${{ secrets.GITHUB_TOKEN }}
+          driver: docker
+          start args: '--addons=ingress'
+      - name: Build the Keycloak Docker image
+        working-directory: quarkus/container
+        run: |
+          cp ../dist/target/keycloak-*.tar.gz ./
+          eval $(minikube -p minikube docker-env)
+          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
+
       - name: Test operator running in cluster
         working-directory: operator
         run: |
           eval $(minikube -p minikube docker-env)
           mvn clean verify \
               -Dquarkus.container-image.build=true \
-              -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
               --no-transfer-progress -Dtest.operator.deployment=remote \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
-      # DEBUG: instead of running the tests before testing on OLM uncomment the following steps
-      # - name: Test operator running in cluster
-      #   working-directory: operator
-      #   run: |
-      #     eval $(minikube -p minikube docker-env)
-      #     mvn clean verify \
-      #         -Dquarkus.container-image.build=true \
-      #         -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
-      #         -Dquarkus.kubernetes.deployment-target=kubernetes \
-      #         -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
-      #         -DskipTests
-      # - name: Install the operator CRDs
-      #   working-directory: operator
-      #   run: |
-      #     kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
-      #     kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+  test-olm:
+    name: Test OLM installation
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update maven settings
+        run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JDK_VERSION }}
+          cache: 'maven'
+      - name: Download built keycloak distribution
+        uses: actions/download-artifact@v3
+        with:
+          name: keycloak-distribution
+          path: quarkus/dist/target/
+      - name: Setup Minikube-Kubernetes
+        uses: manusa/actions-setup-minikube@v2.4.3
+        with:
+          minikube version: v1.24.0
+          kubernetes version: v1.22.3
+          github token: ${{ secrets.GITHUB_TOKEN }}
+          driver: docker
+          start args: '--addons=ingress'
+      - name: Build the Keycloak Docker image
+        working-directory: quarkus/container
+        run: |
+          cp ../dist/target/keycloak-*.tar.gz ./
+          eval $(minikube -p minikube docker-env)
+          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
-      # Test the OLM bundle
+      - name: Build the operator image
+        working-directory: operator
+        run: |
+          eval $(minikube -p minikube docker-env)
+          mvn clean package \
+              -Dquarkus.container-image.build=true \
+              -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
+              -DskipTests
+
+      - name: Install the operator CRDs
+        working-directory: operator
+        run: |
+          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
+          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+
       - name: Install OPM
         uses: redhat-actions/openshift-tools-installer@v1
         with:
           source: "github"
           opm: "1.21.0"
-          operator-sdk: "1.18.1"
       
       - name: Install Yq
         run: sudo snap install yq
 
-      - name: Install Operator Lifecycle Manager using Operator SDK
-        run: operator-sdk olm install
+      - name: Install OLM
+        working-directory: operator
+        run: ./scripts/install-olm.sh
 
       - name: Login to docker registry
         uses: docker/login-action@v1.14.1
@@ -141,9 +219,6 @@ jobs:
         run: |
           kubectl apply -f src/main/resources/example-postgres.yaml
           kubectl apply -f src/main/resources/example-keycloak.yml
-          # Wait for the deployment to be created
-          timeout 120 sh -c "while ! kubectl get deployment/example-kc; do (sleep 1 && kubectl get pods); done"
-          # Wait for the deployment to be available
-          kubectl wait --for=condition=available --timeout=600s deployment/example-kc
-          # Wait for the pods in the namespace to be ready
-          kubectl wait --for=condition=Ready --timeout=600s pods -l app=keycloak
+          kubectl apply -f src/main/resources/example-realm.yaml
+          # Wait for the CRs to be ready
+          ./scripts/check-examples-installed.sh
