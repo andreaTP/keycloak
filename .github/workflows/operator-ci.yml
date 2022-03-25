@@ -95,6 +95,12 @@ jobs:
       # kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
       # kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
+      - name: Install the operator CRDs
+        working-directory: operator
+        run: |
+          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
+          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+
       # Test the OLM bundle
       - name: Install OPM
         uses: redhat-actions/openshift-tools-installer@v1
@@ -108,11 +114,6 @@ jobs:
 
       - name: Install Operator Lifecycle Manager using Operator SDK
         run: operator-sdk olm install
-
-      # - name: Install the operator CRDs
-      #   run: |
-      #     kubectl apply -f operator/target/kubernetes/keycloaks.keycloak.org-v1.yml
-      #     kubectl apply -f operator/target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
       - name: Login to docker registry
         uses: docker/login-action@v1.14.1
