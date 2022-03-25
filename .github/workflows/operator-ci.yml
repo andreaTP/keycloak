@@ -9,6 +9,7 @@ on:
 
 env:
   JDK_VERSION: 11
+  DOCKER_BUILD_EXTRA_OPTS: 
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.
@@ -55,7 +56,7 @@ jobs:
           cp dist/target/keycloak-*.tar.gz container/
           cd container
           eval $(minikube -p minikube docker-env)
-          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
+          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
       # - name: Test operator running locally
       #   working-directory: operator
@@ -134,8 +135,8 @@ jobs:
           ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
 
 # Now we have to install the example CR, specifying the keycloak image?
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Install the operator with OLM
         working-directory: operator
