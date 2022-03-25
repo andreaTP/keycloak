@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 env:
   JDK_VERSION: 11
-  OLM_TEST_VERSION: "0.0.1-${GITHUB_RUN_ID}"
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.
@@ -119,16 +118,17 @@ jobs:
         run: |
           VERSION=0.0.1-${GITHUB_RUN_ID}
           eval $(minikube -p minikube docker-env)
-          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${OLM_TEST_VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${OLM_TEST_VERSION}
-          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${OLM_TEST_VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${OLM_TEST_VERSION}
+          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
+          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
 
       - name: Prepare resources for testing on OLM
         working-directory: operator
         run: |
+          VERSION=0.0.1-${GITHUB_RUN_ID}
           eval $(minikube -p minikube docker-env)
-          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${OLM_TEST_VERSION} 0.0.1
+          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${VERSION} 0.0.1
 
       # DEBUG
       # - name: Setup tmate session
