@@ -8,4 +8,4 @@ mv keycloak-${VERSION} keycloak-dist
 keycloak-dist/bin/add-user-keycloak.sh -u admin -p admin
 
 # update QS version to match KC version
-mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false -DgroupId=org.keycloak* -DartifactId=* -Pbump-version -B
+# mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false -DgroupId=org.keycloak* -DartifactId=* -Pbump-version -B
