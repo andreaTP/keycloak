@@ -114,28 +114,28 @@ jobs:
       - name: Login to docker registry
         uses: docker/login-action@v1.14.1
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ secrets.TEST_DOCKER_REGISTRY }}
+          username: ${{ secrets.TEST_DOCKER_USERNAME }}
+          password: ${{ secrets.TEST_DOCKER_TOKEN }}
 
       - name: Re-tag and push docker images
         run: |
           VERSION=0.0.1-${GITHUB_RUN_ID}
           eval $(minikube -p minikube docker-env)
-          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak-operator:${VERSION}
-          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak:${VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/keycloak:${VERSION}
+          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
+          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
 
       - name: Install the operator with OLM
         working-directory: operator
         run: |
           eval $(minikube -p minikube docker-env)
-          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
+          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
 
 # Now we have to install the example CR, specifying the keycloak image?
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - name: Install the operator with OLM
         working-directory: operator
@@ -145,16 +145,17 @@ jobs:
         run: |
           kubectl wait --for=condition=available --timeout=600s deployment/example-kc
 
-      - name: Clean up the container registry
-        # uses: snok/container-retention-policy@v1.4.1
-        uses: snok/container-retention-policy@fdd5728f5b6918fbc30e24e0ca78ff1e6b378ea4
-        with:
-          image-names: keycloak, keycloak-operator, keycloak-operator-bundle, keycloak-test-catalog
-          # cut-off: 1 week ago UTC
-          # TO TEST:
-          cut-off: one hour ago UTC
-          account-type: personal
-          # TODO: the following should be enabled instead before merging
-          # account-type: org
-          # org-name: keycloak
-          token: ${{ secrets.PAT }}
+      # this works only for GH registry
+      # - name: Clean up the container registry
+      #   # uses: snok/container-retention-policy@v1.4.1
+      #   uses: snok/container-retention-policy@fdd5728f5b6918fbc30e24e0ca78ff1e6b378ea4
+      #   with:
+      #     image-names: keycloak, keycloak-operator, keycloak-operator-bundle, keycloak-test-catalog
+      #     # cut-off: 1 week ago UTC
+      #     # TO TEST:
+      #     cut-off: one hour ago UTC
+      #     account-type: personal
+      #     # TODO: the following should be enabled instead before merging
+      #     # account-type: org
+      #     # org-name: keycloak
+      #     token: ${{ secrets.PAT }}
