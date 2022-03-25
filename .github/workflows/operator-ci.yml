@@ -115,6 +115,7 @@ jobs:
           password: ${{ secrets.TEST_DOCKER_TOKEN }}
 
       - name: Prepare resources for testing on OLM
+        working-directory: operator
         run: |
           VERSION=0.0.1-${GITHUB_RUN_ID}
           eval $(minikube -p minikube docker-env)
