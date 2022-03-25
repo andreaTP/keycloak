@@ -153,4 +153,4 @@ jobs:
           # Wait for the deployment to be available
           kubectl wait --for=condition=available --timeout=600s deployment/example-kc
           # Wait for the pods in the namespace to be ready
-          kubectl wait --for=condition=Ready pods --all
+          kubectl wait --for=condition=Ready --timeout=600s pods -l app=keycloak
