@@ -1,7 +1,6 @@
 name: Keycloak CI
 
-# TODO: re-enable me
-# on: [push, pull_request]
+on: [push, pull_request]
 
 env:
   DEFAULT_JDK_VERSION: 11

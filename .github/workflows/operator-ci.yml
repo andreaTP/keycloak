@@ -51,28 +51,15 @@ jobs:
           eval $(minikube -p minikube docker-env)
           docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
-      # - name: Test operator running locally
-      #   working-directory: operator
-      #   run: |
-      #     mvn clean verify \
-      #         -Dquarkus.kubernetes.deployment-target=kubernetes \
-      #         -Doperator.keycloak.image=keycloak:${GITHUB_SHA} \
-      #         -Doperator.keycloak.image-pull-policy=Never \
-      #         -Dtest.operator.kubernetes.ip=$(minikube ip)
+      - name: Test operator running locally
+        working-directory: operator
+        run: |
+          mvn clean verify \
+              -Dquarkus.kubernetes.deployment-target=kubernetes \
+              -Doperator.keycloak.image=keycloak:${GITHUB_SHA} \
+              -Doperator.keycloak.image-pull-policy=Never \
+              -Dtest.operator.kubernetes.ip=$(minikube ip)
 
-      # - name: Test operator running in cluster
-      #   working-directory: operator
-      #   run: |
-      #     eval $(minikube -p minikube docker-env)
-      #     mvn clean verify \
-      #         -Dquarkus.container-image.build=true \
-      #         -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
-      #         -Dquarkus.kubernetes.deployment-target=kubernetes \
-      #         -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
-      #         --no-transfer-progress -Dtest.operator.deployment=remote \
-      #         -Dtest.operator.kubernetes.ip=$(minikube ip)
-
-      # TODO: remove me - temporary to reduce CI time
       - name: Test operator running in cluster
         working-directory: operator
         run: |
@@ -82,18 +69,25 @@ jobs:
               -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
-              -DskipTests
-          
-      # # TODO check if this is really needed
-      # # probably not
-      # kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
-      # kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+              --no-transfer-progress -Dtest.operator.deployment=remote \
+              -Dtest.operator.kubernetes.ip=$(minikube ip)
 
-      - name: Install the operator CRDs
-        working-directory: operator
-        run: |
-          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
-          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+      # DEBUG: instead of running the tests before testing on OLM uncomment the following steps
+      # - name: Test operator running in cluster
+      #   working-directory: operator
+      #   run: |
+      #     eval $(minikube -p minikube docker-env)
+      #     mvn clean verify \
+      #         -Dquarkus.container-image.build=true \
+      #         -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
+      #         -Dquarkus.kubernetes.deployment-target=kubernetes \
+      #         -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
+      #         -DskipTests
+      # - name: Install the operator CRDs
+      #   working-directory: operator
+      #   run: |
+      #     kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
+      #     kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
       # Test the OLM bundle
       - name: Install OPM
@@ -127,13 +121,6 @@ jobs:
           docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
 
           ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${VERSION} 0.0.1
-
-      # - name: Prepare resources for testing on OLM
-      #   working-directory: operator
-      #   run: |
-      #     VERSION=0.0.1-${GITHUB_RUN_ID}
-      #     eval $(minikube -p minikube docker-env)
-      #     ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${VERSION} 0.0.1
 
       # DEBUG
       # - name: Setup tmate session
