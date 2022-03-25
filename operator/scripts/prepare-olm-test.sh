@@ -18,7 +18,7 @@ $SCRIPT_DIR/create-olm-bundle.sh $VERSION $PREV_VERSION $OPERATOR_DOCKER_IMAGE
 $SCRIPT_DIR/inject-custom-image.sh $VERSION "$DOCKER_REGISTRY/keycloak:$VERSION"
 
 (cd $SCRIPT_DIR/../olm/$VERSION && \
-  docker build -t $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION -f bundle.Dockerfile . && \
+  docker build --label "quay.expires-after=20h" -t $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION -f bundle.Dockerfile . && \
   docker push $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION)
 
 # Verify the bundle
@@ -28,7 +28,7 @@ opm alpha bundle validate --tag $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSI
 $SCRIPT_DIR/create-olm-test-catalog.sh $VERSION $DOCKER_REGISTRY/keycloak-operator-bundle
 
 (cd $SCRIPT_DIR/../olm/catalog && \
-  docker build -f test-catalog.Dockerfile -t $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION . && \
+  docker build --label "quay.expires-after=20h" -f test-catalog.Dockerfile -t $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION . && \
   docker push $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION)
 
 # Create testing resources

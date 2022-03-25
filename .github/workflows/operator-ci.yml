@@ -9,7 +9,7 @@ on:
 
 env:
   JDK_VERSION: 11
-  DOCKER_BUILD_EXTRA_OPTS: 
+  OLM_TEST_VERSION: "0.0.1-${GITHUB_RUN_ID}"
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.
@@ -72,7 +72,8 @@ jobs:
       #   run: |
       #     eval $(minikube -p minikube docker-env)
       #     mvn clean verify \
-      #         -Dquarkus.container-image.build=true -Dquarkus.container-image.tag=test \
+      #         -Dquarkus.container-image.build=true \
+      #         -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
       #         -Dquarkus.kubernetes.deployment-target=kubernetes \
       #         -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
       #         --no-transfer-progress -Dtest.operator.deployment=remote \
@@ -85,6 +86,7 @@ jobs:
           eval $(minikube -p minikube docker-env)
           mvn clean verify \
               -Dquarkus.container-image.build=true \
+              -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
               -DskipTests
@@ -123,40 +125,27 @@ jobs:
         run: |
           VERSION=0.0.1-${GITHUB_RUN_ID}
           eval $(minikube -p minikube docker-env)
-          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
-          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
+          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${OLM_TEST_VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${OLM_TEST_VERSION}
+          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${OLM_TEST_VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${OLM_TEST_VERSION}
 
-      - name: Install the operator with OLM
+      - name: Prepare resources for testing on OLM
         working-directory: operator
         run: |
           eval $(minikube -p minikube docker-env)
-          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
+          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${OLM_TEST_VERSION} 0.0.1
 
-# Now we have to install the example CR, specifying the keycloak image?
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      # DEBUG
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - name: Install the operator with OLM
         working-directory: operator
         run: ./scripts/install-keycloak-operator.sh
 
-      - name: Wait for the deployment to be ready
+      - name: Deploy an example Keycloak and wait for it to be ready
         run: |
+          kubectl apply -f src/main/resources/example-postgres.yaml
+          kubectl apply -f src/main/resources/example-keycloak.yml
           kubectl wait --for=condition=available --timeout=600s deployment/example-kc
-
-      # this works only for GH registry
-      # - name: Clean up the container registry
-      #   # uses: snok/container-retention-policy@v1.4.1
-      #   uses: snok/container-retention-policy@fdd5728f5b6918fbc30e24e0ca78ff1e6b378ea4
-      #   with:
-      #     image-names: keycloak, keycloak-operator, keycloak-operator-bundle, keycloak-test-catalog
-      #     # cut-off: 1 week ago UTC
-      #     # TO TEST:
-      #     cut-off: one hour ago UTC
-      #     account-type: personal
-      #     # TODO: the following should be enabled instead before merging
-      #     # account-type: org
-      #     # org-name: keycloak
-      #     token: ${{ secrets.PAT }}
