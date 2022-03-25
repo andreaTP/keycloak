@@ -114,7 +114,7 @@ jobs:
           username: ${{ secrets.TEST_DOCKER_USERNAME }}
           password: ${{ secrets.TEST_DOCKER_TOKEN }}
 
-      - name: Re-tag and push docker images
+      - name: Prepare resources for testing on OLM
         run: |
           VERSION=0.0.1-${GITHUB_RUN_ID}
           eval $(minikube -p minikube docker-env)
@@ -123,12 +123,14 @@ jobs:
           docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
           docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
 
-      - name: Prepare resources for testing on OLM
-        working-directory: operator
-        run: |
-          VERSION=0.0.1-${GITHUB_RUN_ID}
-          eval $(minikube -p minikube docker-env)
           ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${VERSION} 0.0.1
+
+      # - name: Prepare resources for testing on OLM
+      #   working-directory: operator
+      #   run: |
+      #     VERSION=0.0.1-${GITHUB_RUN_ID}
+      #     eval $(minikube -p minikube docker-env)
+      #     ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${VERSION} 0.0.1
 
       # DEBUG
       # - name: Setup tmate session
@@ -139,6 +141,7 @@ jobs:
         run: ./scripts/install-keycloak-operator.sh
 
       - name: Deploy an example Keycloak and wait for it to be ready
+        working-directory: operator
         run: |
           kubectl apply -f src/main/resources/example-postgres.yaml
           kubectl apply -f src/main/resources/example-keycloak.yml
