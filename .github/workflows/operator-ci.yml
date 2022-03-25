@@ -146,4 +146,7 @@ jobs:
         run: |
           kubectl apply -f src/main/resources/example-postgres.yaml
           kubectl apply -f src/main/resources/example-keycloak.yml
+          # Wait for the deployment to be created
+          timeout 60 sh -c "while ! kubectl get deployment/example-kc; do sleep 1; done"
+          # Wait for the deployment to be ready
           kubectl wait --for=condition=available --timeout=600s deployment/example-kc
