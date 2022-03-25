@@ -89,10 +89,11 @@ jobs:
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
               -DskipTests
-          # TODO check if this is really needed
-          # probably not
-          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
-          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+          
+      # # TODO check if this is really needed
+      # # probably not
+      # kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
+      # kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
       # Test the OLM bundle
       - name: Install OPM
