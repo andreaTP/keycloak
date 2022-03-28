@@ -239,8 +239,8 @@ public class ExportImportTest extends AbstractKeycloakTest {
     }
 
     @Test
-    public void testImportDoesntThrowNPEs() {
-        importRealmFromFile("/import/test-npes.json");
+    public void testImportWithNullAuthenticatorConfigAndNoBrowserFlow() {
+        importRealmFromFile("/import/testrealm-authenticator-config-null.json");
         Assert.assertTrue("Imported realm hasn't been found!", isRealmPresent("cez"));
         addTestRealmToTestRealmReps("cez");
     }
