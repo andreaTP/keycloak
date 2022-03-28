@@ -239,6 +239,13 @@ public class ExportImportTest extends AbstractKeycloakTest {
     }
 
     @Test
+    public void testImportDoesntThrowNPEs() {
+        importRealmFromFile("/import/test-npes.json");
+        Assert.assertTrue("Imported realm hasn't been found!", isRealmPresent("cez"));
+        addTestRealmToTestRealmReps("cez");
+    }
+
+    @Test
     public void testImportIgnoreExistingMissingClientId() {
         TestingExportImportResource resource = testingClient.testing().exportImport();
 

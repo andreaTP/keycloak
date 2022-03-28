@@ -1,0 +1,564 @@
+{
+     "authenticationFlows": [
+        {
+           "alias": "browser",
+           "authenticationExecutions": [
+              {
+                 "authenticator": "auth-spnego",
+                 "authenticatorFlow": false,
+                 "priority": 20,
+                 "requirement": "ALTERNATIVE",
+                 "userSetupAllowed": false
+              }
+           ],
+           "builtIn": true,
+           "description": "browser based authentification2",
+           "id": "3e6ccf87-5473-4eb0-8cbb-28f6b9e6f4d6",
+           "providerId": "basic-flow",
+           "topLevel": true
+        }
+     ],
+     "clientScopes": [
+        {
+           "attributes": {
+              "display.on.consent.screen": "false",
+              "include.in.token.scope": "true"
+           },
+           "description": "Microprofile - JWT built-in scope",
+           "name": "microprofile-jwt",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "upn",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "username",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "upn",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-property-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "",
+              "display.on.consent.screen": "false",
+              "include.in.token.scope": "false"
+           },
+           "description": "OpenID Connect scope for add allowed web origins to the access token",
+           "name": "web-origins",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "name": "allowed web origins",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-allowed-origins-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "${rolesScopeConsentText}",
+              "display.on.consent.screen": "true",
+              "include.in.token.scope": "false"
+           },
+           "description": "OpenID Connect scope for add user roles to the access token",
+           "name": "roles",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "realm_access.roles",
+                    "jsonType.label": "String",
+                    "multivalued": "true",
+                    "user.attribute": "foo"
+                 },
+                 "name": "realm roles",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-realm-role-mapper"
+              },
+              {
+                 "name": "audience resolve",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-audience-resolve-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "resource_access.${client_id}.roles",
+                    "jsonType.label": "String",
+                    "multivalued": "true",
+                    "user.attribute": "foo"
+                 },
+                 "name": "client roles",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-client-role-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "${phoneScopeConsentText}",
+              "display.on.consent.screen": "true",
+              "include.in.token.scope": "true"
+           },
+           "description": "OpenID Connect built-in scope: phone",
+           "name": "phone",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "phone_number_verified",
+                    "id.token.claim": "true",
+                    "jsonType.label": "boolean",
+                    "user.attribute": "phoneNumberVerified",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "phone number verified",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "phone_number",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "phoneNumber",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "phone number",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "${addressScopeConsentText}",
+              "display.on.consent.screen": "true",
+              "include.in.token.scope": "true"
+           },
+           "description": "OpenID Connect built-in scope: address",
+           "name": "address",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "id.token.claim": "true",
+                    "user.attribute.country": "country",
+                    "user.attribute.formatted": "formatted",
+                    "user.attribute.locality": "locality",
+                    "user.attribute.postal_code": "postal_code",
+                    "user.attribute.region": "region",
+                    "user.attribute.street": "street",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "address",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-address-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "${emailScopeConsentText}",
+              "display.on.consent.screen": "true",
+              "include.in.token.scope": "true"
+           },
+           "description": "OpenID Connect built-in scope: email",
+           "name": "email",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "email_verified",
+                    "id.token.claim": "true",
+                    "jsonType.label": "boolean",
+                    "user.attribute": "emailVerified",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "email verified",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-property-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "email",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "email",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "email",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-property-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "${profileScopeConsentText}",
+              "display.on.consent.screen": "true",
+              "include.in.token.scope": "true"
+           },
+           "description": "OpenID Connect built-in scope: profile",
+           "name": "profile",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "family_name",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "lastName",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "family name",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-property-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "zoneinfo",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "zoneinfo",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "zoneinfo",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "given_name",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "firstName",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "given name",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-property-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "nickname",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "nickname",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "nickname",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "locale",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "locale",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "locale",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "profile",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "profile",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "profile",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "birthdate",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "birthdate",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "birthdate",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "gender",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "gender",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "gender",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "preferred_username",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "username",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "username",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-property-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "picture",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "picture",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "picture",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "website",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "website",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "website",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "id.token.claim": "true",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "full name",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-full-name-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "updated_at",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "updatedAt",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "updated at",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              },
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "middle_name",
+                    "id.token.claim": "true",
+                    "jsonType.label": "String",
+                    "user.attribute": "middleName",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "middle name",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-usermodel-attribute-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "${samlRoleListScopeConsentText}",
+              "display.on.consent.screen": "true"
+           },
+           "description": "SAML role list",
+           "name": "role_list",
+           "protocol": "saml",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "attribute.name": "Role",
+                    "attribute.nameformat": "Basic",
+                    "single": "false"
+                 },
+                 "name": "role list",
+                 "protocol": "saml",
+                 "protocolMapper": "saml-role-list-mapper"
+              }
+           ]
+        },
+        {
+           "attributes": {
+              "consent.screen.text": "${offlineAccessScopeConsentText}",
+              "display.on.consent.screen": "true"
+           },
+           "description": "OpenID Connect built-in scope: offline_access",
+           "name": "offline_access",
+           "protocol": "openid-connect"
+        },
+        {
+           "attributes": {
+              "display.on.consent.screen": "true",
+              "include.in.token.scope": "true"
+           },
+           "name": "groups",
+           "protocol": "openid-connect",
+           "protocolMappers": [
+              {
+                 "config": {
+                    "access.token.claim": "true",
+                    "claim.name": "groups",
+                    "full.path": "false",
+                    "id.token.claim": "true",
+                    "userinfo.token.claim": "true"
+                 },
+                 "name": "groups",
+                 "protocol": "openid-connect",
+                 "protocolMapper": "oidc-group-membership-mapper"
+              }
+           ]
+        }
+     ],
+     "displayName": "CEZ",
+     "enabled": true,
+     "id": "cez",
+     "realm": "cez",
+     "userFederationMappers": [
+        {
+           "config": {
+              "always.read.value.from.ldap": "true",
+              "is.binary.attribute": "false",
+              "is.mandatory.in.ldap": "true",
+              "ldap.attribute": "sAMAccountName",
+              "read.only": "true",
+              "user.model.attribute": "username"
+           },
+           "federationMapperType": "user-attribute-ldap-mapper",
+           "federationProviderDisplayName": "ldap",
+           "name": "username"
+        },
+        {
+           "config": {
+              "ldap.password.policy.hints.enabled": "false"
+           },
+           "federationMapperType": "msad-user-account-control-mapper",
+           "federationProviderDisplayName": "ldap",
+           "name": "MSAD account controls"
+        },
+        {
+           "config": {
+              "always.read.value.from.ldap": "true",
+              "is.binary.attribute": "false",
+              "is.mandatory.in.ldap": "true",
+              "ldap.attribute": "sn",
+              "read.only": "true",
+              "user.model.attribute": "lastName"
+           },
+           "federationMapperType": "user-attribute-ldap-mapper",
+           "federationProviderDisplayName": "ldap",
+           "name": "last name"
+        },
+        {
+           "config": {
+              "always.read.value.from.ldap": "true",
+              "is.binary.attribute": "false",
+              "is.mandatory.in.ldap": "true",
+              "ldap.attribute": "mail",
+              "read.only": "true",
+              "user.model.attribute": "email"
+           },
+           "federationMapperType": "user-attribute-ldap-mapper",
+           "federationProviderDisplayName": "ldap",
+           "name": "email"
+        },
+        {
+           "config": {
+              "ldap.full.name.attribute": "cn",
+              "read.only": "true",
+              "write.only": "false"
+           },
+           "federationMapperType": "full-name-ldap-mapper",
+           "federationProviderDisplayName": "ldap",
+           "name": "full name"
+        },
+        {
+           "config": {
+              "drop.non.existing.groups.during.sync": "false",
+              "group.name.ldap.attribute": "cn",
+              "group.object.classes": "group",
+              "groups.dn": "OU=skupiny,DC=cezdata,DC=corp",
+              "groups.ldap.filter": "(|(CN=GIT_P_*)(CN=OCP_P_*)(CN=VLT_P_*))",
+              "mapped.group.attributes": "CN",
+              "memberof.ldap.attribute": "memberOf",
+              "membership.attribute.type": "DN",
+              "membership.ldap.attribute": "member",
+              "membership.user.ldap.attribute": "CN",
+              "mode": "READ_ONLY",
+              "preserve.group.inheritance": "true",
+              "user.roles.retrieve.strategy": "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE_RECURSIVELY"
+           },
+           "federationMapperType": "group-ldap-mapper",
+           "federationProviderDisplayName": "ldap",
+           "name": "groups"
+        }
+     ],
+     "userFederationProviders": [
+        {
+           "config": {
+              "allowKerberosAuthentication": "true",
+              "bindCredential": "abCDEfT-Qk9KK",
+              "bindDn": "qpopenshiftocs",
+              "connectionPooling": "true",
+              "connectionUrl": "ldaps://abc.test.corp:636",
+              "debug": "false",
+              "editMode": "READ_ONLY",
+              "importEnabled": "true",
+              "kerberosRealm": "ABCDATA.CORP",
+              "keyTab": "/etc/eap-secret-volume/keytab",
+              "rdnLDAPAttribute": "sAMAccountName",
+              "searchScope": "2",
+              "serverPrincipal": "HTTP/openshift-sso.abc.test.corp",
+              "trustEmail": "false",
+              "useKerberosForPasswordAuthentication": "false",
+              "useTruststoreSpi": "never",
+              "userObjectClasses": "person, organizationalPerson, user",
+              "usernameLDAPAttribute": "sAMAccountName",
+              "usersDn": "OU=uzivatele,DC=cezdata,DC=corp",
+              "uuidLDAPAttribute": "objectGUID",
+              "vendor": "ad"
+           },
+           "displayName": "ldap",
+           "providerName": "ldap"
+        }
+     ]
+}
