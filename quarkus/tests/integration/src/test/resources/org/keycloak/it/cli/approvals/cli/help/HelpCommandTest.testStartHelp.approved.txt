@@ -14,6 +14,8 @@ Options:
                        the server. Use this configuration carefully in production as it might
                        impact the startup time.
 -h, --help           This help message.
+--import-realm       Import realms during startup by reading any realm configuration file from the
+                       'data/import' directory.
 
 Database:
 
@@ -45,10 +47,11 @@ Hostname:
 
 --hostname <hostname>
                      Hostname for the Keycloak server.
---hostname-admin <url>
-                     Overrides the hostname for the admin console and APIs.
 --hostname-path <path>
                      This should be set if proxy uses a different context-path for Keycloak.
+--hostname-port <port>
+                     The port used by the proxy when exposing the hostname. Set this option if the
+                       proxy uses a port other than the default HTTP and HTTPS ports. Default: -1.
 --hostname-strict <true|false>
                      Disables dynamically resolving the hostname from request headers. Should
                        always be set to true in production, unless proxy verifies the Host header.
@@ -96,7 +99,7 @@ HTTP/TLS:
 Proxy:
 
 --proxy <mode>       The proxy address forwarding mode if the server is behind a reverse proxy.
-                       Possible values are: none,edge,reencrypt,passthrough Default: none.
+                       Possible values are: edge,reencrypt,passthrough Default: none.
 
 Vault:
 
