@@ -32,7 +32,6 @@ jobs:
         with:
           name: keycloak-distribution
           retention-days: 1
-          # TODO check if I can use the star here
           path: quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz
 
   test-local:
@@ -62,10 +61,9 @@ jobs:
           driver: docker
           start args: '--addons=ingress'
       - name: Build the Keycloak Docker image
+        working-directory: quarkus/container
         run: |
-          cd quarkus
-          cp dist/target/keycloak-*.tar.gz container/
-          cd container
+          cp ../dist/target/keycloak-*.tar.gz ./
           eval $(minikube -p minikube docker-env)
           docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
@@ -105,10 +103,9 @@ jobs:
           driver: docker
           start args: '--addons=ingress'
       - name: Build the Keycloak Docker image
+        working-directory: quarkus/container
         run: |
-          cd quarkus
-          cp dist/target/keycloak-*.tar.gz container/
-          cd container
+          cp ../dist/target/keycloak-*.tar.gz ./
           eval $(minikube -p minikube docker-env)
           docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
@@ -122,23 +119,6 @@ jobs:
               -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
               --no-transfer-progress -Dtest.operator.deployment=remote \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
-
-      # DEBUG: instead of running the tests before testing on OLM uncomment the following steps
-      # - name: Test operator running in cluster
-      #   working-directory: operator
-      #   run: |
-      #     eval $(minikube -p minikube docker-env)
-      #     mvn clean verify \
-      #         -Dquarkus.container-image.build=true \
-      #         -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
-      #         -Dquarkus.kubernetes.deployment-target=kubernetes \
-      #         -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
-      #         -DskipTests
-      # - name: Install the operator CRDs
-      #   working-directory: operator
-      #   run: |
-      #     kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
-      #     kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
   test-olm:
     name: Test OLM installation
@@ -168,9 +148,7 @@ jobs:
           start args: '--addons=ingress'
       - name: Build the Keycloak Docker image
         run: |
-          cd quarkus
-          cp dist/target/keycloak-*.tar.gz container/
-          cd container
+          cp ../dist/target/keycloak-*.tar.gz ./
           eval $(minikube -p minikube docker-env)
           docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
@@ -222,8 +200,8 @@ jobs:
           ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${VERSION} 0.0.1
 
       # DEBUG
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Install the operator with OLM
         working-directory: operator
