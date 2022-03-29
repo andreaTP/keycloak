@@ -32,6 +32,7 @@ jobs:
         with:
           name: keycloak-distribution
           retention-days: 1
+          # TODO check if I can use the star here
           path: quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz
 
   start-minikube:
@@ -64,7 +65,7 @@ jobs:
       - name: Build the Keycloak Docker image
         run: |
           cd quarkus
-          cp quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz container/
+          cp dist/target/keycloak-*.tar.gz container/
           cd container
           eval $(minikube -p minikube docker-env)
           docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
@@ -162,7 +163,6 @@ jobs:
       - name: Build the Keycloak Docker image
         run: |
           cd quarkus
-          ls -al dist/target/
           cp dist/target/keycloak-*.tar.gz container/
           cd container
           eval $(minikube -p minikube docker-env)
