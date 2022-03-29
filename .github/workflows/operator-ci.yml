@@ -177,7 +177,7 @@ jobs:
       - name: Install Yq
         run: sudo snap install yq
 
-      - name: Install Operator Lifecycle Manager using Operator SDK
+      - name: Install OLM
         working-directory: operator
         run: ./scripts/install-olm.sh
 
