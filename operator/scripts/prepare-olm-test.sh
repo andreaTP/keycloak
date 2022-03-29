@@ -14,9 +14,6 @@ OPERATOR_DOCKER_IMAGE="$DOCKER_REGISTRY/$OPERATOR_IMAGE_NAME"
 # Create OLM bundle
 $SCRIPT_DIR/create-olm-bundle.sh $VERSION $PREV_VERSION $OPERATOR_DOCKER_IMAGE
 
-# WARNING: This should be done ONLY for tests
-$SCRIPT_DIR/inject-custom-image.sh $VERSION "$DOCKER_REGISTRY/keycloak:$VERSION"
-
 (cd $SCRIPT_DIR/../olm/$VERSION && \
   docker build --label "quay.expires-after=20h" -t $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION -f bundle.Dockerfile . && \
   docker push $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION)
