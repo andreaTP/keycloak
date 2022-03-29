@@ -32,7 +32,7 @@ jobs:
         with:
           name: keycloak-distribution
           retention-days: 1
-          path: quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz
+          path: quarkus/dist/target/keycloak-*.tar.gz
 
   start-minikube:
     name: Start minikube and build Keycloak Docker image
@@ -51,7 +51,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: keycloak-distribution
-          path: quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz
+          path: quarkus/dist/target/
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
@@ -149,7 +149,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: keycloak-distribution
-          path: quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz
+          path: quarkus/dist/target/
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
