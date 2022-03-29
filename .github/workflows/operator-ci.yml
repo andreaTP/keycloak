@@ -147,6 +147,7 @@ jobs:
           driver: docker
           start args: '--addons=ingress'
       - name: Build the Keycloak Docker image
+        working-directory: quarkus/container
         run: |
           cp ../dist/target/keycloak-*.tar.gz ./
           eval $(minikube -p minikube docker-env)
