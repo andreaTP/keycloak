@@ -168,11 +168,11 @@ jobs:
               -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
               -DskipTests
 
-      - name: Install the operator CRDs
-        working-directory: operator
-        run: |
-          kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
-          kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
+      # - name: Install the operator CRDs
+      #   working-directory: operator
+      #   run: |
+      #     kubectl apply -f target/kubernetes/keycloaks.keycloak.org-v1.yml
+      #     kubectl apply -f target/kubernetes/keycloakrealmimports.keycloak.org-v1.yml
 
       - name: Install OPM
         uses: redhat-actions/openshift-tools-installer@v1
