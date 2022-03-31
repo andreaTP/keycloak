@@ -74,7 +74,6 @@ jobs:
           mvn clean verify \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Doperator.keycloak.image=keycloak:0.0.1-${GITHUB_RUN_ID} \
-              -Doperator.keycloak.image-pull-policy=IfNotPresent \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
   test-remote:
@@ -90,11 +89,6 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JDK_VERSION }}
           cache: 'maven'
-      - name: Download built keycloak distribution
-        uses: actions/download-artifact@v3
-        with:
-          name: keycloak-distribution
-          path: quarkus/dist/target/
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
@@ -111,7 +105,7 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:0.0.1-${GITHUB_RUN_ID}","-Doperator.keycloak.image-pull-policy=IfNotPresent" \
+              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:0.0.1-${GITHUB_RUN_ID}" \
               --no-transfer-progress -Dtest.operator.deployment=remote \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
@@ -128,11 +122,6 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JDK_VERSION }}
           cache: 'maven'
-      - name: Download built keycloak distribution
-        uses: actions/download-artifact@v3
-        with:
-          name: keycloak-distribution
-          path: quarkus/dist/target/
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
@@ -148,7 +137,7 @@ jobs:
           username: ${{ secrets.TEST_DOCKER_USERNAME }}
           password: ${{ secrets.TEST_DOCKER_TOKEN }}
 
-      - name: Build the operator image
+      - name: Build and push the operator image
         working-directory: operator
         run: |
           mvn clean package \
