@@ -25,8 +25,6 @@ jobs:
       - name: Set outputs
         id: vars
         run: echo "::set-output name=version::0.0.1-$(git rev-parse --short HEAD)"
-      - name: Check version
-        run: echo ${{ steps.vars.outputs.version }}
       - name: Update maven settings
         run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
       - uses: actions/setup-java@v2
@@ -59,8 +57,6 @@ jobs:
       - name: Set outputs
         id: vars
         run: echo "::set-output name=version::0.0.1-$(git rev-parse --short HEAD)"
-      - name: Check version
-        run: echo ${{ steps.vars.outputs.version }}
       - name: Update maven settings
         run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
       - uses: actions/setup-java@v2
@@ -82,7 +78,7 @@ jobs:
         run: |
           mvn clean verify \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }} \
+              -Doperator.keycloak.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${{ steps.vars.outputs.version }} \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
   test-remote:
@@ -94,8 +90,6 @@ jobs:
       - name: Set outputs
         id: vars
         run: echo "::set-output name=version::0.0.1-$(git rev-parse --short HEAD)"
-      - name: Check version
-        run: echo ${{ steps.vars.outputs.version }}
       - name: Update maven settings
         run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
       - uses: actions/setup-java@v2
@@ -119,7 +113,7 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }}" \
+              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${{ steps.vars.outputs.version }}" \
               --no-transfer-progress -Dtest.operator.deployment=remote \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
