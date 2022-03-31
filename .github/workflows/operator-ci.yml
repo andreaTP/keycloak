@@ -32,13 +32,19 @@ jobs:
       - name: Create the Keycloak distribution
         run: |
           mvn clean install -Pdistribution -DskipTests -DskipExamples -DskipTestsuite
-
-      - name: Store Keycloak distribution
-        uses: actions/upload-artifact@v3
+      - name: Login to docker registry
+        uses: docker/login-action@v1.14.1
         with:
-          name: keycloak-distribution
-          retention-days: 1
-          path: quarkus/dist/target/keycloak-999-SNAPSHOT.tar.gz
+          registry: ${{ secrets.TEST_DOCKER_REGISTRY }}
+          username: ${{ secrets.TEST_DOCKER_USERNAME }}
+          password: ${{ secrets.TEST_DOCKER_TOKEN }}
+      - name: Build and push the Keycloak Docker image
+        working-directory: quarkus/container
+        run: |
+          VERSION=0.0.1-${GITHUB_RUN_ID}
+          cp ../dist/target/keycloak-*.tar.gz ./
+          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
 
   test-local:
     name: Test local
@@ -53,11 +59,6 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JDK_VERSION }}
           cache: 'maven'
-      - name: Download built keycloak distribution
-        uses: actions/download-artifact@v3
-        with:
-          name: keycloak-distribution
-          path: quarkus/dist/target/
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
@@ -66,20 +67,14 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
           start args: '--addons=ingress'
-      - name: Build the Keycloak Docker image
-        working-directory: quarkus/container
-        run: |
-          cp ../dist/target/keycloak-*.tar.gz ./
-          eval $(minikube -p minikube docker-env)
-          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
       - name: Test operator running locally
         working-directory: operator
         run: |
           mvn clean verify \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=keycloak:${GITHUB_SHA} \
-              -Doperator.keycloak.image-pull-policy=Never \
+              -Doperator.keycloak.image=keycloak:0.0.1-${GITHUB_RUN_ID} \
+              -Doperator.keycloak.image-pull-policy=IfNotPresent \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
   test-remote:
@@ -108,12 +103,6 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
           start args: '--addons=ingress'
-      - name: Build the Keycloak Docker image
-        working-directory: quarkus/container
-        run: |
-          cp ../dist/target/keycloak-*.tar.gz ./
-          eval $(minikube -p minikube docker-env)
-          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
 
       - name: Test operator running in cluster
         working-directory: operator
@@ -122,7 +111,7 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${GITHUB_SHA}","-Doperator.keycloak.image-pull-policy=Never" \
+              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:0.0.1-${GITHUB_RUN_ID}","-Doperator.keycloak.image-pull-policy=IfNotPresent" \
               --no-transfer-progress -Dtest.operator.deployment=remote \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
@@ -152,19 +141,20 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
           start args: '--addons=ingress'
-      - name: Build the Keycloak Docker image
-        working-directory: quarkus/container
-        run: |
-          cp ../dist/target/keycloak-*.tar.gz ./
-          eval $(minikube -p minikube docker-env)
-          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${GITHUB_SHA}
+      - name: Login to docker registry
+        uses: docker/login-action@v1.14.1
+        with:
+          registry: ${{ secrets.TEST_DOCKER_REGISTRY }}
+          username: ${{ secrets.TEST_DOCKER_USERNAME }}
+          password: ${{ secrets.TEST_DOCKER_TOKEN }}
 
       - name: Build the operator image
         working-directory: operator
         run: |
-          eval $(minikube -p minikube docker-env)
           mvn clean package \
               -Dquarkus.container-image.build=true \
+              -Dquarkus.container-image.push=true \
+              -Dquarkus.container-image.image="${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:0.0.1-${GITHUB_RUN_ID}"
               -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
               -DskipTests
 
@@ -181,24 +171,10 @@ jobs:
         working-directory: operator
         run: ./scripts/install-olm.sh
 
-      - name: Login to docker registry
-        uses: docker/login-action@v1.14.1
-        with:
-          registry: ${{ secrets.TEST_DOCKER_REGISTRY }}
-          username: ${{ secrets.TEST_DOCKER_USERNAME }}
-          password: ${{ secrets.TEST_DOCKER_TOKEN }}
-
       - name: Prepare resources for testing on OLM
         working-directory: operator
         run: |
-          VERSION=0.0.1-${GITHUB_RUN_ID}
-          eval $(minikube -p minikube docker-env)
-          docker tag keycloak/keycloak-operator:999-SNAPSHOT ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${VERSION}
-          docker tag keycloak:${GITHUB_SHA} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${VERSION}
-          # Prepare OLM resources
-          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${VERSION} 0.0.1
+          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} 0.0.1-${GITHUB_RUN_ID} 0.0.1
 
       # DEBUG
       # - name: Setup tmate session
