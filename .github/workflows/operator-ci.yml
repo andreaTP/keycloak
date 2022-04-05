@@ -45,13 +45,13 @@ jobs:
         working-directory: quarkus/container
         run: |
           cp ../dist/target/keycloak-*.tar.gz ./
-          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${{ steps.vars.outputs.version }}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${{ steps.vars.outputs.version }}
+          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
       - name: Build and push a custom pre-augmented Keycloak Docker image
         working-directory: operator
         run: |
-          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/custom-keycloak
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/custom-keycloak:${{ steps.vars.outputs.version }}
+          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak:${{ steps.vars.outputs.version }}
 
   test-local:
     name: Test local
@@ -83,8 +83,8 @@ jobs:
         run: |
           mvn clean verify \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${{ steps.vars.outputs.version }} \
-              -Dtest.operator.custom.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/custom-keycloak:${{ steps.vars.outputs.version }} \
+              -Doperator.keycloak.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }} \
+              -Dtest.operator.custom.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak:${{ steps.vars.outputs.version }} \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
   test-remote:
@@ -119,8 +119,8 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak:${{ steps.vars.outputs.version }}" \
-              -Dtest.operator.custom.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/custom-keycloak:${{ steps.vars.outputs.version }} \
+              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}" \
+              -Dtest.operator.custom.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak:${{ steps.vars.outputs.version }} \
               --no-transfer-progress -Dtest.operator.deployment=remote \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
@@ -152,7 +152,7 @@ jobs:
         uses: docker/login-action@v1.14.1
         with:
           registry: ${{ secrets.TEST_DOCKER_REGISTRY }}
-          username: ${{ secrets.TEST_DOCKER_USERNAME }}
+          username: ${{ secrets.TEST_DOCKER_REPOSITORY }}
           password: ${{ secrets.TEST_DOCKER_TOKEN }}
 
       - name: Build and push the operator image
@@ -161,7 +161,7 @@ jobs:
           mvn clean package \
               -Dquarkus.container-image.build=true \
               -Dquarkus.container-image.push=true \
-              -Dquarkus.container-image.image="${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }}/keycloak-operator:${{ steps.vars.outputs.version }}" \
+              -Dquarkus.container-image.image="${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak-operator:${{ steps.vars.outputs.version }}" \
               -Dquarkus.container-image.labels."\"quay.expires-after\""="20h" \
               -DskipTests
 
@@ -181,7 +181,7 @@ jobs:
       - name: Prepare resources for testing on OLM
         working-directory: operator
         run: |
-          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_USERNAME }} ${{ steps.vars.outputs.version }} 0.0.1
+          ./scripts/prepare-olm-test.sh ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }} ${{ steps.vars.outputs.version }} 0.0.1
 
       - name: Install the operator with OLM
         working-directory: operator
