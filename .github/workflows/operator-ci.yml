@@ -109,11 +109,10 @@ jobs:
       - name: Test operator running locally
         working-directory: operator
         run: |
-          # TODO: check if needed:
-          eval $(minikube -p minikube docker-env)
           mvn clean verify \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }} \
+              -Doperator.keycloak.image-pull-policy=Never \
               -Dtest.operator.custom.image=custom-keycloak:${{ steps.vars.outputs.version }} \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
@@ -160,7 +159,7 @@ jobs:
           mvn clean verify \
               -Dquarkus.container-image.build=true \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }}" \
+              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }}","-Doperator.keycloak.image-pull-policy=Never" \
               -Dtest.operator.custom.image=custom-keycloak:${{ steps.vars.outputs.version }} \
               --no-transfer-progress -Dtest.operator.deployment=remote \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
@@ -202,8 +201,8 @@ jobs:
 
       - name: Import Keycloak Container images
         run: |
-          cat keycloak.tar | docker import - ${{ steps.registry.ip }}:80/keycloak:${{ steps.vars.outputs.version }}
-          docker push ${{ steps.registry.ip }}:80/keycloak:${{ steps.vars.outputs.version }}
+          cat keycloak.tar | docker import - localhost:5000/keycloak:${{ steps.vars.outputs.version }}
+          docker push localhost:5000/keycloak:${{ steps.vars.outputs.version }}
 
       - name: Build and push the operator image
         working-directory: operator
@@ -211,7 +210,7 @@ jobs:
           mvn clean package \
               -Dquarkus.container-image.build=true \
               -Dquarkus.container-image.push=true \
-              -Dquarkus.container-image.image="${{ steps.registry.ip }}:80/keycloak-operator:${{ steps.vars.outputs.version }}" \
+              -Dquarkus.container-image.image="localhost:5000/keycloak-operator:${{ steps.vars.outputs.version }}" \
               -DskipTests
 
       - name: Install OPM
@@ -230,7 +229,7 @@ jobs:
       - name: Prepare resources for testing on OLM
         working-directory: operator
         run: |
-          ./scripts/prepare-olm-test.sh ${{ steps.registry.ip }}:80 ${{ steps.vars.outputs.version }} NONE
+          ./scripts/prepare-olm-test.sh localhost:5000 ${{ steps.vars.outputs.version }} NONE
 
       - name: Install the operator with OLM
         working-directory: operator
