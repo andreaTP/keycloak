@@ -162,25 +162,6 @@ jobs:
   #             --no-transfer-progress -Dtest.operator.deployment=remote \
   #             -Dtest.operator.kubernetes.ip=$(minikube ip)
 
-  # TEST
-  test-insecure-registry:
-    name: Test Minikube + insecure registry
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Minikube-Kubernetes
-        uses: manusa/actions-setup-minikube@v2.4.3
-        with:
-          minikube version: v1.24.0
-          kubernetes version: v1.22.3
-          github token: ${{ secrets.GITHUB_TOKEN }}
-          driver: docker
-          start args: '--addons=registry'
-      # DEBUG
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
   test-olm:
     name: Test OLM installation
     runs-on: ubuntu-latest
@@ -197,6 +178,9 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ env.JDK_VERSION }}
           cache: 'maven'
+      - name: Patch Docker insecure registries to have minikube registry as well
+        run: |
+          echo "{\"cgroup-parent\": \"/actions_job\",\"insecure-registries\": [\"minikube.local:5000\"]}" | sudo tee /etc/docker/daemon.json
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
@@ -205,12 +189,10 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
           start args: '--addons=registry'
-      # - name: Patch Docker insecure registries to have minikube registry as well
-      #   run: |
-      #     echo "{\"cgroup-parent\": \"/actions_job\",\"insecure-registries\": [\"$(minikube ip):5000\"]}" | sudo tee /etc/docker/daemon.json
-      #     sudo systemctl daemon-reload
-      #     sudo systemctl restart docker
-      #     minikube start
+      # TODO: check if is really necessary
+      - name: Add minikube to hosts
+        run: |
+          echo "$(minikube ip) minikube.local" | sudo tee -a /etc/hosts
       - name: Download keycloak containers
         id: download-keycloak-containers
         uses: actions/download-artifact@v3
@@ -224,10 +206,9 @@ jobs:
 
       - name: Import Keycloak Container images
         run: |
-          echo ${{ steps.registry.outputs.ip }}
           docker load --input keycloak.tar
-          docker tag keycloak:${{ steps.vars.outputs.version }} $(minikube ip):5000/keycloak:${{ steps.vars.outputs.version }}
-          docker push $(minikube ip):5000/keycloak:${{ steps.vars.outputs.version }}
+          docker tag keycloak:${{ steps.vars.outputs.version }} minikube.local:5000/keycloak:${{ steps.vars.outputs.version }}
+          docker push minikube.local:5000/keycloak:${{ steps.vars.outputs.version }}
 
       - name: Build and push the operator image
         working-directory: operator
@@ -237,7 +218,7 @@ jobs:
               -Dquarkus.container-image.build=true \
               -Dquarkus.container-image.push=true \
               -Dquarkus.container-image.insecure=true \
-              -Dquarkus.container-image.image="$(minikube ip):5000/keycloak-operator:${{ steps.vars.outputs.version }}" \
+              -Dquarkus.container-image.image="${{ steps.registry.outputs.ip }}:5000/keycloak-operator:${{ steps.vars.outputs.version }}" \
               -DskipTests
 
       - name: Install OPM
@@ -256,13 +237,12 @@ jobs:
       - name: Prepare docker resources for testing on OLM
         working-directory: operator
         run: |
-          # https://github.com/kubernetes/minikube/issues/6982#issuecomment-597350088
-          ./scripts/prepare-olm-test.sh localhost:5000 ${{ steps.vars.outputs.version }} NONE
+          ./scripts/prepare-olm-test.sh minikube.local:5000 ${{ steps.vars.outputs.version }} NONE
 
       - name: Prepare test resources for OLM
         working-directory: operator
         run: |
-          ./scripts/create-olm-test-resources.sh $VERSION $(kubectl get svc registry --output=jsonpath='{.spec.clusterIP}' --namespace=kube-system):5000
+          ./scripts/create-olm-test-resources.sh $VERSION ${{ steps.registry.outputs.ip }}:5000
 
       # DEBUG
       - name: Setup tmate session
