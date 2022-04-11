@@ -115,8 +115,6 @@ jobs:
               -Dtest.operator.custom.image=custom-keycloak:${{ steps.vars.outputs.version }} \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
-mvn clean verify -Dquarkus.kubernetes.deployment-target=kubernetes -Doperator.keycloak.image=keycloak:0.0.1-c5bfc85 -Doperator.keycloak.image-pull-policy=Never -Dtest.operator.custom.image=custom-keycloak:0.0.1-c5bfc85 -Dtest.operator.kubernetes.ip=$(minikube ip) -Dtest=KeycloakServicesE2EIT
-
   test-remote:
     name: Test remote
     runs-on: ubuntu-latest
