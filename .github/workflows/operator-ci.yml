@@ -102,12 +102,8 @@ jobs:
       - name: Import Keycloak Container images
         run: |
           eval $(minikube -p minikube docker-env)
-          cat keycloak.tar | docker import - keycloak:${{ steps.vars.outputs.version }}
-          cat custom-keycloak.tar | docker import - custom-keycloak:${{ steps.vars.outputs.version }}
-
-      # DEBUG
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+          docker load --input keycloak.tar
+          docker load --input custom-keycloak.tar
 
       - name: Test operator running locally
         working-directory: operator
@@ -118,6 +114,8 @@ jobs:
               -Doperator.keycloak.image-pull-policy=Never \
               -Dtest.operator.custom.image=custom-keycloak:${{ steps.vars.outputs.version }} \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
+
+mvn clean verify -Dquarkus.kubernetes.deployment-target=kubernetes -Doperator.keycloak.image=keycloak:0.0.1-c5bfc85 -Doperator.keycloak.image-pull-policy=Never -Dtest.operator.custom.image=custom-keycloak:0.0.1-c5bfc85 -Dtest.operator.kubernetes.ip=$(minikube ip) -Dtest=KeycloakServicesE2EIT
 
   test-remote:
     name: Test remote
@@ -151,12 +149,8 @@ jobs:
       - name: Import Keycloak Container images
         run: |
           eval $(minikube -p minikube docker-env)
-          cat keycloak.tar | docker import - keycloak:${{ steps.vars.outputs.version }}
-          cat custom-keycloak.tar | docker import - custom-keycloak:${{ steps.vars.outputs.version }}
-
-      # DEBUG
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+          docker load --input keycloak.tar
+          docker load --input custom-keycloak.tar
 
       - name: Test operator running in cluster
         working-directory: operator
@@ -200,6 +194,12 @@ jobs:
         with:
           name: keycloak-containers
 
+
+      # DEBUG
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
+
       - name: Set registry IP
         id: registry
         # https://github.com/kubernetes/minikube/issues/6982#issuecomment-597350088
@@ -207,7 +207,8 @@ jobs:
 
       - name: Import Keycloak Container images
         run: |
-          cat keycloak.tar | docker import - localhost:5000/keycloak:${{ steps.vars.outputs.version }}
+          docker load --input keycloak.tar
+          docker tag keycloak:${{ steps.vars.outputs.version }} localhost:5000/keycloak:${{ steps.vars.outputs.version }}
           docker push localhost:5000/keycloak:${{ steps.vars.outputs.version }}
 
       - name: Build and push the operator image
