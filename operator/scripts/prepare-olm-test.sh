@@ -28,4 +28,5 @@ sudo opm index add --bundles $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION 
 docker push $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION
 
 # Create testing resources
-$SCRIPT_DIR/create-olm-test-resources.sh $VERSION $DOCKER_REGISTRY
+# TODO clean this up
+# $SCRIPT_DIR/create-olm-test-resources.sh $VERSION $DOCKER_REGISTRY
