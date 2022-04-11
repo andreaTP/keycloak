@@ -35,13 +35,27 @@ jobs:
       - name: Create the Keycloak distribution
         run: |
           mvn clean install -Pdistribution -DskipTests -DskipExamples -DskipTestsuite
-      - name: Store Keycloak distribution
-        id: store-keycloak-dist
+      - name: Build and push the Keycloak Docker image
+        working-directory: quarkus/container
+        run: |
+          cp ../dist/target/keycloak-*.tar.gz ./
+          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${{ steps.vars.outputs.version }}
+          docker save keycloak:${{ steps.vars.outputs.version }} > ~/keycloak.tar
+      - name: Build and push a custom pre-augmented Keycloak Docker image
+        working-directory: operator
+        run: |
+          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} keycloak custom-keycloak
+          docker save custom-keycloak:${{ steps.vars.outputs.version }} > ~/custom-keycloak.tar
+
+      - name: Store Keycloak containers
+        id: store-keycloak-containers
         uses: actions/upload-artifact@v3
         with:
-          name: keycloak-distribution
+          name: keycloak-containers
           retention-days: 1
-          path: quarkus/container/dist/target/keycloak-*.tar.gz
+          path: |
+            ~/keycloak.tar
+            ~/custom-keycloak.tar
 
 
       # - name: Build and push the Keycloak Docker image
@@ -79,33 +93,26 @@ jobs:
           kubernetes version: v1.22.3
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
-          start args: '--insecure-registry --addons=ingress,registry'
-      - name: Download keycloak distribution
-        id: download-keycloak-dist
+          start args: '--addons=ingress'
+      - name: Download keycloak containers
+        id: download-keycloak-containers
         uses: actions/download-artifact@v3
         with:
-          name: keycloak-distribution
+          name: keycloak-containers
 
-      - name: Build and push the Keycloak Docker image
-        working-directory: quarkus/container
+      - name: Import Keycloak Container images
         run: |
-          ls -al ../../
-          cp ../../keycloak-*.tar.gz ./
-          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t localhost:5000/keycloak:${{ steps.vars.outputs.version }}
-          docker push localhost:5000/keycloak:${{ steps.vars.outputs.version }}
-      - name: Build and push a custom pre-augmented Keycloak Docker image
-        working-directory: operator
-        run: |
-          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} localhost:5000/keycloak localhost:5000/custom-keycloak
-          docker push localhost:5000/custom-keycloak:${{ steps.vars.outputs.version }}
+          eval $(minikube -p minikube docker-env)
+          cat keycloak.tar | docker import - keycloak:${{ steps.vars.outputs.version }}
+          cat custom-keycloak.tar | docker import - custom-keycloak:${{ steps.vars.outputs.version }}
 
       - name: Test operator running locally
         working-directory: operator
         run: |
           mvn clean verify \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=localhost:5000/keycloak:${{ steps.vars.outputs.version }} \
-              -Dtest.operator.custom.image=localhost:5000/custom-keycloak:${{ steps.vars.outputs.version }} \
+              -Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }} \
+              -Dtest.operator.custom.image=custom-keycloak:${{ steps.vars.outputs.version }} \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
   test-remote:
@@ -131,7 +138,25 @@ jobs:
           kubernetes version: v1.22.3
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
-          start args: '--addons=ingress'
+          # TODO check if I can remove  "insecure-registry"
+          start args: '--addons=ingress,registry --insecure-registry=localhost:5000'
+      - name: Download keycloak distribution
+        id: download-keycloak-dist
+        uses: actions/download-artifact@v3
+        with:
+          name: keycloak-distribution
+
+      - name: Build and push the Keycloak Docker image
+        working-directory: quarkus/container
+        run: |
+          cp ../dist/target/keycloak-*.tar.gz ./
+          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
+      - name: Build and push a custom pre-augmented Keycloak Docker image
+        working-directory: operator
+        run: |
+          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak
+          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak:${{ steps.vars.outputs.version }}
 
       - name: Test operator running in cluster
         working-directory: operator
