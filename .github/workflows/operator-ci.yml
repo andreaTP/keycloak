@@ -35,23 +35,26 @@ jobs:
       - name: Create the Keycloak distribution
         run: |
           mvn clean install -Pdistribution -DskipTests -DskipExamples -DskipTestsuite
-      - name: Login to docker registry
-        uses: docker/login-action@v1.14.1
+      - name: Store Keycloak distribution
+        id: store-keycloak-dist
+        uses: actions/upload-artifact@v3
         with:
-          registry: ${{ secrets.TEST_DOCKER_REGISTRY }}
-          username: ${{ secrets.TEST_DOCKER_USERNAME }}
-          password: ${{ secrets.TEST_DOCKER_TOKEN }}
-      - name: Build and push the Keycloak Docker image
-        working-directory: quarkus/container
-        run: |
-          cp ../dist/target/keycloak-*.tar.gz ./
-          docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
-      - name: Build and push a custom pre-augmented Keycloak Docker image
-        working-directory: operator
-        run: |
-          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak
-          docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak:${{ steps.vars.outputs.version }}
+          name: keycloak-distribution
+          retention-days: 1
+          path: quarkus/container/dist/target/keycloak-*.tar.gz
+
+
+      # - name: Build and push the Keycloak Docker image
+      #   working-directory: quarkus/container
+      #   run: |
+      #     cp ../dist/target/keycloak-*.tar.gz ./
+      #     docker build --label "quay.expires-after=20h" --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
+      #     docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }}
+      # - name: Build and push a custom pre-augmented Keycloak Docker image
+      #   working-directory: operator
+      #   run: |
+      #     ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak
+      #     docker push ${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak:${{ steps.vars.outputs.version }}
 
   test-local:
     name: Test local
@@ -76,7 +79,25 @@ jobs:
           kubernetes version: v1.22.3
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
-          start args: '--addons=ingress'
+          start args: '--insecure-registry --addons=ingress,registry'
+      - name: Download keycloak distribution
+        id: download-keycloak-dist
+        uses: actions/download-artifact@v3
+        with:
+          name: keycloak-distribution
+
+      - name: Build and push the Keycloak Docker image
+        working-directory: quarkus/container
+        run: |
+          ls -al ../../
+          cp ../../keycloak-*.tar.gz ./
+          docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t localhost:5000/keycloak:${{ steps.vars.outputs.version }}
+          docker push localhost:5000/keycloak:${{ steps.vars.outputs.version }}
+      - name: Build and push a custom pre-augmented Keycloak Docker image
+        working-directory: operator
+        run: |
+          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} localhost:5000/keycloak localhost:5000/custom-keycloak
+          docker push localhost:5000/custom-keycloak:${{ steps.vars.outputs.version }}
 
       - name: Test operator running locally
         working-directory: operator
