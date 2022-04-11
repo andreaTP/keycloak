@@ -104,8 +104,8 @@ jobs:
         run: |
           mvn clean verify \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/keycloak:${{ steps.vars.outputs.version }} \
-              -Dtest.operator.custom.image=${{ secrets.TEST_DOCKER_REGISTRY }}/${{ secrets.TEST_DOCKER_REPOSITORY }}/custom-keycloak:${{ steps.vars.outputs.version }} \
+              -Doperator.keycloak.image=localhost:5000/keycloak:${{ steps.vars.outputs.version }} \
+              -Dtest.operator.custom.image=localhost:5000/custom-keycloak:${{ steps.vars.outputs.version }} \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
   test-remote:
