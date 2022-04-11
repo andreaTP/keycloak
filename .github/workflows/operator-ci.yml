@@ -217,9 +217,7 @@ jobs:
           echo ${{ steps.registry.outputs.ip }}
           mvn clean package \
               -Dquarkus.container-image.build=true \
-              -Dquarkus.container-image.push=true \
-              -Dquarkus.container-image.insecure=true \
-              -Dquarkus.container-image.image="${{ steps.registry.outputs.ip }}:5000/keycloak-operator:${{ steps.vars.outputs.version }}" \
+              -Dquarkus.container-image.image="minikube.local:5000/keycloak-operator:${{ steps.vars.outputs.version }}" \
               -DskipTests
 
       - name: Install OPM
