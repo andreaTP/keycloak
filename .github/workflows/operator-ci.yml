@@ -181,6 +181,8 @@ jobs:
       - name: Patch Docker insecure registries to have minikube registry as well
         run: |
           echo "{\"cgroup-parent\": \"/actions_job\",\"insecure-registries\": [\"minikube.local:5000\"]}" | sudo tee /etc/docker/daemon.json
+          sudo systemctl daemon-reload
+          sudo systemctl restart docker
       - name: Setup Minikube-Kubernetes
         uses: manusa/actions-setup-minikube@v2.4.3
         with:
@@ -189,7 +191,6 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
           driver: docker
           start args: '--addons=registry'
-      # TODO: check if is really necessary
       - name: Add minikube to hosts
         run: |
           echo "$(minikube ip) minikube.local" | sudo tee -a /etc/hosts
@@ -243,10 +244,6 @@ jobs:
         working-directory: operator
         run: |
           ./scripts/create-olm-test-resources.sh $VERSION ${{ steps.registry.outputs.ip }}:5000
-
-      # DEBUG
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
 
       - name: Install the operator with OLM
         working-directory: operator
