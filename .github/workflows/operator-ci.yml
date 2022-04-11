@@ -205,6 +205,9 @@ jobs:
         # https://github.com/kubernetes/minikube/issues/6982#issuecomment-597350088
         run: echo "::set-output name=ip::$(kubectl get svc registry --output=jsonpath='{.spec.clusterIP}' --namespace=kube-system)"
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Import Keycloak Container images
         run: |
           docker load --input keycloak.tar
@@ -214,7 +217,6 @@ jobs:
       - name: Build and push the operator image
         working-directory: operator
         run: |
-          echo ${{ steps.registry.outputs.ip }}
           mvn clean package \
               -Dquarkus.container-image.build=true \
               -Dquarkus.container-image.image="minikube.local:5000/keycloak-operator:${{ steps.vars.outputs.version }}" \
