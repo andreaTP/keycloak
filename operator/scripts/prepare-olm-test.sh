@@ -22,11 +22,10 @@ $SCRIPT_DIR/create-olm-bundle.sh $VERSION $PREV_VERSION $OPERATOR_DOCKER_IMAGE
 opm alpha bundle validate --tag $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION --image-builder docker
 
 # Create the test-catalog
-$SCRIPT_DIR/create-olm-test-catalog.sh $VERSION $DOCKER_REGISTRY/keycloak-operator-bundle
-
-(cd $SCRIPT_DIR/../olm/catalog && \
-  docker build -f test-catalog.Dockerfile -t $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION . && \
-  docker push $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION)
+# Using `sudo` to make the command working on Mac:
+sudo opm index add --bundles $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION \
+  --tag $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION -c docker
+docker push $DOCKER_REGISTRY/keycloak-test-catalog:$VERSION
 
 # Create testing resources
 $SCRIPT_DIR/create-olm-test-resources.sh $VERSION $DOCKER_REGISTRY
