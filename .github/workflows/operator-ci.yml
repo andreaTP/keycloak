@@ -99,12 +99,15 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: keycloak-containers
-
       - name: Import Keycloak Container images
         run: |
           eval $(minikube -p minikube docker-env)
           cat keycloak.tar | docker import - keycloak:${{ steps.vars.outputs.version }}
           cat custom-keycloak.tar | docker import - custom-keycloak:${{ steps.vars.outputs.version }}
+
+      # DEBUG
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Test operator running locally
         working-directory: operator
@@ -145,12 +148,15 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: keycloak-containers
-
       - name: Import Keycloak Container images
         run: |
           eval $(minikube -p minikube docker-env)
           cat keycloak.tar | docker import - keycloak:${{ steps.vars.outputs.version }}
           cat custom-keycloak.tar | docker import - custom-keycloak:${{ steps.vars.outputs.version }}
+
+      # DEBUG
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Test operator running in cluster
         working-directory: operator
@@ -209,9 +215,10 @@ jobs:
         run: |
           mvn clean package \
               -Dquarkus.container-image.build=true \
-              -Dquarkus.container-image.push=true \
               -Dquarkus.container-image.image="localhost:5000/keycloak-operator:${{ steps.vars.outputs.version }}" \
               -DskipTests
+          # TODO: doublecheck - problems uploading the image using mvn
+          docker push localhost:5000/keycloak-operator:${{ steps.vars.outputs.version }}
 
       - name: Install OPM
         uses: redhat-actions/openshift-tools-installer@v1
