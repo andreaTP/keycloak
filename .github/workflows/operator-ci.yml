@@ -233,10 +233,16 @@ jobs:
         working-directory: operator
         run: ./scripts/install-olm.sh
 
+      - name: Create the OLM bundle
+        working-directory: operator
+        run: |
+          # TODO make a script to wrap things toghether for local testing
+          .scripts/create-olm-bundle.sh ${{ steps.vars.outputs.version }} NONE ${{ steps.registry.outputs.ip }}:5000/keycloak-operator
+
       - name: Prepare docker resources for testing on OLM
         working-directory: operator
         run: |
-          ./scripts/prepare-olm-test.sh minikube.local:5000 ${{ steps.vars.outputs.version }} NONE
+          ./scripts/prepare-olm-test.sh minikube.local:5000 ${{ steps.vars.outputs.version }}
 
       - name: Prepare test resources for OLM
         working-directory: operator

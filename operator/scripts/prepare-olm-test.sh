@@ -6,13 +6,13 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DOCKER_REGISTRY="$1"
 
 VERSION="$2"
-PREV_VERSION="$3"
 
 OPERATOR_IMAGE_NAME="keycloak-operator"
 OPERATOR_DOCKER_IMAGE="$DOCKER_REGISTRY/$OPERATOR_IMAGE_NAME"
 
 # Create OLM bundle
-$SCRIPT_DIR/create-olm-bundle.sh $VERSION $PREV_VERSION $OPERATOR_DOCKER_IMAGE
+# TODO: clean this up
+# $SCRIPT_DIR/create-olm-bundle.sh $VERSION $PREV_VERSION $OPERATOR_DOCKER_IMAGE
 
 (cd $SCRIPT_DIR/../olm/$VERSION && \
   docker build -t $DOCKER_REGISTRY/keycloak-operator-bundle:$VERSION -f bundle.Dockerfile . && \
