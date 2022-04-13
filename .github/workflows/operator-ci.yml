@@ -84,7 +84,7 @@ jobs:
         run: |
           eval $(minikube -p minikube docker-env)
           docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${{ steps.vars.outputs.version }}
-          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} custom-keycloak
+          ./operator/scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} custom-keycloak
 
       - name: Test operator running locally
         working-directory: operator
@@ -131,7 +131,7 @@ jobs:
         run: |
           eval $(minikube -p minikube docker-env)
           docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${{ steps.vars.outputs.version }}
-          ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} custom-keycloak
+          ./operator/scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} custom-keycloak
 
       - name: Test operator running in cluster
         working-directory: operator
@@ -154,7 +154,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Set outputs
         id: vars
-        run: echo "::set-output name=version::0.0.1-$(git rev-parse --short HEAD)"
+        run: echo "::set-output name=version::0.0.1"
       - name: Update maven settings
         run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
       - uses: actions/setup-java@v2
