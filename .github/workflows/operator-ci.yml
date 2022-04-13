@@ -47,7 +47,7 @@ jobs:
         with:
           name: keycloak-distribution
           retention-days: 1
-          path: quarkus/container/dist/target/keycloak-*.tar.gz
+          path: quarkus/dist/target/keycloak*.tar.gz
 
   test-local:
     name: Test local
