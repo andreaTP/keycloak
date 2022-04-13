@@ -176,11 +176,13 @@ jobs:
       - name: Build and push the Keycloak Docker image
         working-directory: quarkus/container
         run: |
+          eval $(minikube -p minikube docker-env)
           docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t ttl.sh/${GITHUB_SHA::6}keycloak:${{ steps.vars.outputs.version }}
           docker push ttl.sh/${GITHUB_SHA::6}keycloak:${{ steps.vars.outputs.version }}
       - name: Build and push a custom pre-augmented Keycloak Docker image
         working-directory: operator
         run: |
+          eval $(minikube -p minikube docker-env)
           ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} ttl.sh/${GITHUB_SHA::6}keycloak ttl.sh/${GITHUB_SHA::6}custom-keycloak
           docker push ttl.sh/${GITHUB_SHA::6}custom-keycloak:${{ steps.vars.outputs.version }}  
       - name: Build and push the operator image
