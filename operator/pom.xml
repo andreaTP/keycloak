@@ -24,7 +24,7 @@
         <wildfly.common.version>1.5.4.Final-format-001</wildfly.common.version>
         <jackson.version>2.13.2</jackson.version>
         <jackson.databind.version>2.13.2.2</jackson.databind.version>
-        <kubernetes-client.version>5.12.2</kubernetes-client.version>
+        <kubernetes-client.version>6.0-SNAPSHOT</kubernetes-client.version>
 
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -54,6 +54,14 @@
 
 
     <dependencies>
+        <dependency>
+            <groupId>io.sundr</groupId>
+            <artifactId>builder-annotations</artifactId>
+            <scope>compile</scope>
+            <version>0.90-SNAPSHOT</version>
+        </dependency>
+
+
         <!-- Fabric8 -->
         <dependency>
             <groupId>io.fabric8</groupId>
@@ -112,6 +120,10 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-core</artifactId>
         </dependency>
 
         <!-- Test -->
@@ -190,61 +202,9 @@
                             </resources>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>import-keycloak-core</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/keycloak-core</outputDirectory>
-                            <resources>
-                            <resource>
-                                <directory>${basedir}/../core/src/main/java</directory>
-                                <filtering>true</filtering>
-                            </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${basedir}/target/keycloak-core</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <id>patch-core-sources</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${basedir}/patch-sources.sh</executable>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven-failsafe-plugin.version}</version>
