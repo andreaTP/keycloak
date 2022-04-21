@@ -17,10 +17,26 @@
 package org.keycloak.operator.v2alpha1.crds;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import io.fabric8.crd.generator.annotation.SchemaSwap;
+import org.keycloak.representations.idm.ComponentExportRepresentation;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
+import org.keycloak.representations.idm.authorization.ScopeRepresentation;
+import org.keycloak.representations.overrides.ComponentExportRepresentationMap;
+import org.keycloak.representations.overrides.MultivaluedStringStringHashMap;
+import org.keycloak.representations.overrides.NoSubGroupsGroupRepresentationList;
+import org.keycloak.representations.overrides.NoSubcomponentsComponentExportRepresentationMap;
 
 import javax.validation.constraints.NotNull;
 
+@SchemaSwap(originalType = GroupRepresentation.class, fieldName = "subGroups", targetType = NoSubGroupsGroupRepresentationList.class)
+@SchemaSwap(originalType = RealmRepresentation.class, fieldName = "components", targetType = ComponentExportRepresentationMap.class)
+@SchemaSwap(originalType = CredentialRepresentation.class, fieldName = "config", targetType = MultivaluedStringStringHashMap.class)
+@SchemaSwap(originalType = ComponentExportRepresentation.class, fieldName = "subComponents", targetType = NoSubcomponentsComponentExportRepresentationMap.class)
+@SchemaSwap(originalType = ComponentExportRepresentation.class, fieldName = "config", targetType = MultivaluedStringStringHashMap.class)
+@SchemaSwap(originalType = ScopeRepresentation.class, fieldName = "policies", targetType = Void.class)
+@SchemaSwap(originalType = ScopeRepresentation.class, fieldName = "resources", targetType = Void.class)
 public class KeycloakRealmImportSpec {
 
     @NotNull

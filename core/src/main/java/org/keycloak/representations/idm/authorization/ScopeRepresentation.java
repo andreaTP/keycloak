@@ -16,6 +16,8 @@
  */
 package org.keycloak.representations.idm.authorization;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +35,9 @@ public class ScopeRepresentation {
     private String id;
     private String name;
     private String iconUri;
+    @JsonIgnore
     private List<PolicyRepresentation> policies;
+    @JsonIgnore
     private List<ResourceRepresentation> resources;
     private String displayName;
 
