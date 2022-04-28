@@ -101,12 +101,7 @@ public abstract class ClusterOperatorTest {
             .inNamespace(namespace).get();
 
     hasMetadata.stream()
-            .map(b -> {
-              if ("Deployment".equalsIgnoreCase(b.getKind()) && b.getMetadata().getName().contains("operator")) {
-                ((Deployment) b).getSpec().getTemplate().getSpec().getContainers().get(0).setImagePullPolicy("IfNotPresent");
-              }
-              return b;
-            }).forEach(c -> {
+            .forEach(c -> {
               Log.info("processing part : " + c.getKind() + "--" + c.getMetadata().getName() + " -- " + namespace);
               k8sclient.resource(c).inNamespace(namespace).createOrReplace();
             });
