@@ -4,6 +4,7 @@ import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.keycloak.operator.utils.CRAssert;
 import org.keycloak.operator.v2alpha1.KeycloakService;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
@@ -65,6 +66,34 @@ public class RealmImportE2EIT extends ClusterOperatorTest {
             Log.info("Output from curl: '" + curlOutput + "'");
             assertThat(curlOutput).isEqualTo("200");
         });
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = OPERATOR_CUSTOM_IMAGE, matches = ".+")
+    public void testWorkingRealmImportWithCustomImage() {
+        // Arrange
+        var keycloak = getDefaultKeycloakDeployment();
+        keycloak.getSpec().setImage(customImage);
+        deployKeycloak(k8sclient, keycloak, false);
+
+        // Act
+        k8sclient.load(getClass().getResourceAsStream("/example-realm.yaml")).inNamespace(namespace).createOrReplace();
+
+        // Assert
+        var crSelector = k8sclient
+                .resources(KeycloakRealmImport.class)
+                .inNamespace(namespace)
+                .withName("example-count0-kc");
+
+        Awaitility.await()
+                .atMost(3, MINUTES)
+                .pollDelay(5, SECONDS)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), DONE, true);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), STARTED, false);
+                    CRAssert.assertKeycloakRealmImportStatusCondition(crSelector.get(), HAS_ERRORS, false);
+                });
     }
 
     @Test

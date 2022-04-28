@@ -32,6 +32,7 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
 import io.quarkus.logging.Log;
+import org.keycloak.operator.Config;
 import org.keycloak.operator.v2alpha1.crds.Keycloak;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatus;
@@ -53,6 +54,9 @@ public class KeycloakRealmImportController implements Reconciler<KeycloakRealmIm
 
     @Inject
     KubernetesClient client;
+
+    @Inject
+    Config config;
 
     @Inject
     ObjectMapper jsonMapper;
@@ -79,7 +83,7 @@ public class KeycloakRealmImportController implements Reconciler<KeycloakRealmIm
         var realmImportSecret = new KeycloakRealmImportSecret(client, realm, jsonMapper);
         realmImportSecret.createOrUpdateReconciled();
 
-        var realmImportJob = new KeycloakRealmImportJob(client, realm, realmImportSecret.getSecretName());
+        var realmImportJob = new KeycloakRealmImportJob(client, config, realm, realmImportSecret.getSecretName());
         realmImportJob.createOrUpdateReconciled();
         realmImportJob.updateStatus(statusBuilder);
 

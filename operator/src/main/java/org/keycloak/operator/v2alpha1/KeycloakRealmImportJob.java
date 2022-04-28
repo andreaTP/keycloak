@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.ResourceNotFoundException;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
 import io.quarkus.logging.Log;
+import org.keycloak.operator.Config;
 import org.keycloak.operator.OperatorManagedResource;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImport;
 import org.keycloak.operator.v2alpha1.crds.KeycloakRealmImportStatusBuilder;
@@ -38,14 +39,16 @@ import java.util.Optional;
 
 public class KeycloakRealmImportJob extends OperatorManagedResource {
 
+    private final Config config;
     private final KeycloakRealmImport realmCR;
     private final Deployment existingDeployment;
     private final Job existingJob;
     private final String secretName;
     private final String volumeName;
 
-    public KeycloakRealmImportJob(KubernetesClient client, KeycloakRealmImport realmCR, String secretName) {
+    public KeycloakRealmImportJob(KubernetesClient client, Config config, KeycloakRealmImport realmCR, String secretName) {
         super(client, realmCR);
+        this.config = config;
         this.realmCR = realmCR;
         this.secretName = secretName;
         this.volumeName = KubernetesResourceUtil.sanitizeName(secretName + "-volume");
@@ -139,9 +142,10 @@ public class KeycloakRealmImportJob extends OperatorManagedResource {
 
         var override = "--override=false";
 
+        var runBuild = keycloakContainer.getImage().equals(config.keycloak().image()) ? "" : "/opt/keycloak/bin/kc.sh build && ";
+
         var commandArgs = List.of("-c",
-                "/opt/keycloak/bin/kc.sh build && " +
-                    "/opt/keycloak/bin/kc.sh import --file='" + importMntPath + getRealmName() + "-realm.json' " + override);
+                runBuild + "/opt/keycloak/bin/kc.sh import --file='" + importMntPath + getRealmName() + "-realm.json' " + override);
 
         keycloakContainer
                 .setCommand(command);
