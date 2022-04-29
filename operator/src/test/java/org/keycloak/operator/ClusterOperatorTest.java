@@ -96,15 +96,9 @@ public abstract class ClusterOperatorTest {
   }
 
   private static void createRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
-    Log.info("Creating RBAC into Namespace " + namespace);
-    List<HasMetadata> hasMetadata = k8sclient.load(new FileInputStream(TARGET_KUBERNETES_GENERATED_YML_FOLDER + deploymentTarget + ".yml"))
-            .inNamespace(namespace).get();
-
-    hasMetadata
-            .forEach(c -> {
-              Log.info("processing part : " + c.getKind() + "--" + c.getMetadata().getName() + " -- " + namespace);
-              k8sclient.resource(c).inNamespace(namespace).createOrReplace();
-            });
+    Log.info("Creating RBAC and Deployment into Namespace " + namespace);
+    k8sclient.load(new FileInputStream(TARGET_KUBERNETES_GENERATED_YML_FOLDER + deploymentTarget + ".yml"))
+            .inNamespace(namespace).createOrReplace();
   }
 
   private static void cleanRBACresourcesAndOperatorDeployment() throws FileNotFoundException {
