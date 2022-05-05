@@ -161,12 +161,6 @@ public abstract class ClusterOperatorTest {
     // DB
     Log.info("Creating new PostgreSQL deployment");
     k8sclient.load(ClusterOperatorTest.class.getResourceAsStream("/example-postgres.yaml")).inNamespace(namespace).createOrReplace();
-
-    // Check DB has deployed and ready
-    Log.info("Checking Postgres is running");
-    Awaitility.await()
-            .untilAsserted(() -> assertThat(k8sclient.apps().statefulSets().inNamespace(namespace).withName("postgresql-db").get().getStatus().getReadyReplicas()).isEqualTo(1));
-
     deployDBSecret();
   }
 
