@@ -41,9 +41,13 @@
         id: meta
         uses: docker/metadata-action@v4
         with:
+          # TODO: restore me
+          # images: |
+          #   keycloak/keycloak
+          #   quay.io/keycloak/keycloak
           images: |
-            keycloak/keycloak
-            quay.io/keycloak/keycloak
+            andreatp/keycloak
+            quay.io/aperuffo/keycloak
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
