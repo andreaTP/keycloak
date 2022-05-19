@@ -12,7 +12,7 @@ do
   if DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $image:$tag >/dev/null 2>/dev/null; then
       c=$((c+1))
   else
-      echo $tag
+      echo "-${c}"
       break
   fi
 done
