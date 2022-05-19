@@ -23,7 +23,7 @@
       
       - name: Set incremental number
         # TODO: change the image
-        run: echo "INCREMENTAL=-$(.github/scripts/incremental-tag.sh quay.io/aperuffo/keycloak)" >> $GITHUB_ENV
+        run: echo "INCREMENTAL=$(.github/scripts/incremental-tag.sh quay.io/aperuffo/keycloak)" >> $GITHUB_ENV
 
       - name: Login to Quay
         uses: docker/login-action@v2
