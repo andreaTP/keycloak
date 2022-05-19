@@ -1,8 +1,10 @@
 #! /bin/bash
 set -euo pipefail
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 image=$1
-tag=$2
+tag=${2:-$(cd $SCRIPT_DIR/../../ && mvn help:evaluate -Dexpression=project.version -q -DforceStdout)}
 original_tag=$tag
 c=1
 
