@@ -14,7 +14,6 @@ Ensure you have JDK 11 (or newer) installed.
 Build the Docker image with:
 
 ```bash
-mvn clean install -pl :keycloak-operator-maven-plugin -am
 mvn clean package -Doperator -Dquarkus.container-image.build=true
 ```
 

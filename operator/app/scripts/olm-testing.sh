@@ -19,7 +19,6 @@ VERSION="86400000.0.0"
 # Build the operator Docker image
 (
   cd $SCRIPT_DIR/../../
-  mvn clean install -pl :keycloak-operator-maven-plugin -am
   mvn clean package -pl :keycloak-operator -am \
     -Dquarkus.container-image.build=true \
     -Dquarkus.container-image.image="ttl.sh/${UUID}keycloak-operator:${VERSION}" \

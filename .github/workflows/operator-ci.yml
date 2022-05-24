@@ -81,7 +81,6 @@ jobs:
       - name: Test operator running locally
         working-directory: operator
         run: |
-          mvn clean install -pl :keycloak-operator-maven-plugin -am
           mvn clean verify -pl :keycloak-operator -am \
               -Dquarkus.kubernetes.deployment-target=kubernetes \
               -Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }} \
@@ -128,7 +127,6 @@ jobs:
       - name: Test operator running in cluster
         working-directory: operator
         run: |
-          mvn clean install -pl :keycloak-operator-maven-plugin -am
           eval $(minikube -p minikube docker-env)
           mvn clean verify -pl :keycloak-operator -am \
               -Dquarkus.container-image.build=true \
