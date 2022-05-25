@@ -94,7 +94,13 @@ jobs:
 
       - name: Check cluster status on fail
         if: ${{ failure() }}
-        run: kubectl get all --all-namespaces -o yaml
+        run: kubectl get all --all-namespaces -o yaml > kubectl-debug.yaml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: deubg-failure
+          path: |
+            kubectl-debug.yaml
 
   # test-remote:
   #   name: Test remote
