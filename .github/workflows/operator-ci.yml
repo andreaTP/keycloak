@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        exec: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
+        exec: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40 ]
       fail-fast: false
     needs: [build]
     steps:
@@ -92,58 +92,58 @@ jobs:
               -Doperator.keycloak.image-pull-policy=Never \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
-  test-remote:
-    name: Test remote
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        exec: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
-      fail-fast: false
-    needs: [build]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set outputs
-        id: vars
-        run: echo "::set-output name=version::0.0.1-${GITHUB_SHA::6}"
-      - name: Update maven settings
-        run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'temurin'
-          java-version: ${{ env.JDK_VERSION }}
-          cache: 'maven'
-      - name: Setup Minikube-Kubernetes
-        uses: manusa/actions-setup-minikube@v2.6.0
-        with:
-          minikube version: ${{ env.MINIKUBE_VERSION }}
-          kubernetes version: ${{ env.KUBERNETES_VERSION }}
-          github token: ${{ secrets.GITHUB_TOKEN }}
-          driver: docker
-          start args: '--addons=ingress'
-      - name: Download keycloak distribution
-        id: download-keycloak-dist
-        uses: actions/download-artifact@v3
-        with:
-          name: keycloak-distribution
-          path: quarkus/container
-      - name: Build Keycloak Docker images
-        run: |
-          eval $(minikube -p minikube docker-env)
-          (cd quarkus/container && docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${{ steps.vars.outputs.version }})
-          (cd operator && ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} keycloak custom-keycloak)
+  # test-remote:
+  #   name: Test remote
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       exec: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
+  #     fail-fast: false
+  #   needs: [build]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Set outputs
+  #       id: vars
+  #       run: echo "::set-output name=version::0.0.1-${GITHUB_SHA::6}"
+  #     - name: Update maven settings
+  #       run: mkdir -p ~/.m2 ; cp .github/settings.xml ~/.m2/
+  #     - uses: actions/setup-java@v2
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: ${{ env.JDK_VERSION }}
+  #         cache: 'maven'
+  #     - name: Setup Minikube-Kubernetes
+  #       uses: manusa/actions-setup-minikube@v2.6.0
+  #       with:
+  #         minikube version: ${{ env.MINIKUBE_VERSION }}
+  #         kubernetes version: ${{ env.KUBERNETES_VERSION }}
+  #         github token: ${{ secrets.GITHUB_TOKEN }}
+  #         driver: docker
+  #         start args: '--addons=ingress'
+  #     - name: Download keycloak distribution
+  #       id: download-keycloak-dist
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: keycloak-distribution
+  #         path: quarkus/container
+  #     - name: Build Keycloak Docker images
+  #       run: |
+  #         eval $(minikube -p minikube docker-env)
+  #         (cd quarkus/container && docker build --build-arg KEYCLOAK_DIST=$(ls keycloak-*.tar.gz) . -t keycloak:${{ steps.vars.outputs.version }})
+  #         (cd operator && ./scripts/build-testing-docker-images.sh ${{ steps.vars.outputs.version }} keycloak custom-keycloak)
 
-      - name: Test operator running in cluster
-        working-directory: operator
-        run: |
-          eval $(minikube -p minikube docker-env)
-          mvn clean verify \
-              -Dquarkus.container-image.build=true \
-              -Dquarkus.kubernetes.deployment-target=kubernetes \
-              -Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }} \
-              -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image-pull-policy=Never" \
-              -Dtest.operator.custom.image=custom-keycloak:${{ steps.vars.outputs.version }} \
-              --no-transfer-progress -Dtest.operator.deployment=remote \
-              -Dtest.operator.kubernetes.ip=$(minikube ip)
+  #     - name: Test operator running in cluster
+  #       working-directory: operator
+  #       run: |
+  #         eval $(minikube -p minikube docker-env)
+  #         mvn clean verify \
+  #             -Dquarkus.container-image.build=true \
+  #             -Dquarkus.kubernetes.deployment-target=kubernetes \
+  #             -Doperator.keycloak.image=keycloak:${{ steps.vars.outputs.version }} \
+  #             -Dquarkus.jib.jvm-arguments="-Djava.util.logging.manager=org.jboss.logmanager.LogManager","-Doperator.keycloak.image-pull-policy=Never" \
+  #             -Dtest.operator.custom.image=custom-keycloak:${{ steps.vars.outputs.version }} \
+  #             --no-transfer-progress -Dtest.operator.deployment=remote \
+  #             -Dtest.operator.kubernetes.ip=$(minikube ip)
 
   test-olm:
     name: Test OLM installation
