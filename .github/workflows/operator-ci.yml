@@ -45,6 +45,10 @@ jobs:
   test-local:
     name: Test local
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        exec: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
+      fail-fast: false
     needs: [build]
     steps:
       - uses: actions/checkout@v3
@@ -91,6 +95,10 @@ jobs:
   test-remote:
     name: Test remote
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        exec: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ,10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
+      fail-fast: false
     needs: [build]
     steps:
       - uses: actions/checkout@v3
