@@ -122,7 +122,11 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
         realmImportSelector.delete();
 
         Log.info("Testing the Keycloak Cluster");
-        Awaitility.await().atMost(5, MINUTES).ignoreExceptions().untilAsserted(() -> {
+        Awaitility.await()
+                .atMost(10, MINUTES)
+                .pollDelay(5, SECONDS)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
             // Get the list of Keycloak pods
             var pods = k8sclient
                     .pods()
