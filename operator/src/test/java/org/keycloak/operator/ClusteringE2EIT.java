@@ -63,8 +63,8 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
                 .untilAsserted(() -> assertThat(kcPodsSelector.list().getItems().size()).isEqualTo(2));
 
         Awaitility.await()
-                .atMost(2, MINUTES)
-                .pollDelay(5, SECONDS)
+                .atMost(5, MINUTES)
+                .pollDelay(1, SECONDS)
                 .ignoreExceptions()
                 .untilAsserted(() -> CRAssert.assertKeycloakStatusCondition(crSelector.get(), KeycloakStatusCondition.READY, true));
 

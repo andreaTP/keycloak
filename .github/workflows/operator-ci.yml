@@ -92,6 +92,10 @@ jobs:
               -Doperator.keycloak.image-pull-policy=Never \
               -Dtest.operator.kubernetes.ip=$(minikube ip)
 
+      - name: Check cluster status on fail
+        if: ${{ failure() }}
+        run: kubectl get all --all-namespaces -o yaml
+
   # test-remote:
   #   name: Test remote
   #   runs-on: ubuntu-latest
