@@ -42,70 +42,70 @@ public class HostnameDistTest {
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io" })
     public void testSchemeAndPortFromRequestWhenNoProxySet() {
-        assertFrontEndUrl("http://mykeycloak.127.0.0.1.nip.io:8080", "http://mykeycloak.127.0.0.1.nip.io:8080/");
-        assertFrontEndUrl("http://localhost:8080", "http://mykeycloak.127.0.0.1.nip.io:8080/");
-        assertFrontEndUrl("https://localhost:8443", "https://mykeycloak.127.0.0.1.nip.io:8443/");
+        assertFrontEndUrl("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080", "http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080/");
+        assertFrontEndUrl("http://localhost:8080", "http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080/");
+        assertFrontEndUrl("https://localhost:8443", "https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--hostname-strict-https=true" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--hostname-strict-https=true" })
     public void testForceHttpsSchemeAndPortWhenStrictHttpsEnabled() {
-        assertFrontEndUrl("http://mykeycloak.127.0.0.1.nip.io:8080", "https://mykeycloak.127.0.0.1.nip.io:8443/");
-        assertFrontEndUrl("http://localhost:8080", "https://mykeycloak.127.0.0.1.nip.io:8443/");
+        assertFrontEndUrl("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080", "https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443/");
+        assertFrontEndUrl("http://localhost:8080", "https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--hostname-port=8443" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--hostname-port=8443" })
     public void testForceHostnamePortWhenNoProxyIsSet() {
-        assertFrontEndUrl("http://mykeycloak.127.0.0.1.nip.io:8080", "http://mykeycloak.127.0.0.1.nip.io:8443/");
-        assertFrontEndUrl("https://mykeycloak.127.0.0.1.nip.io:8443", "https://mykeycloak.127.0.0.1.nip.io:8443/");
+        assertFrontEndUrl("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080", "http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443/");
+        assertFrontEndUrl("https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443", "https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--proxy=edge" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--proxy=edge" })
     public void testUseDefaultPortsWhenProxyIsSet() {
-        assertFrontEndUrl("http://mykeycloak.127.0.0.1.nip.io:8080", "http://mykeycloak.127.0.0.1.nip.io/");
-        assertFrontEndUrl("https://mykeycloak.127.0.0.1.nip.io:8443", "https://mykeycloak.127.0.0.1.nip.io/");
+        assertFrontEndUrl("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080", "http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io/");
+        assertFrontEndUrl("https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443", "https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--proxy=edge", "--hostname-strict-https=true" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--proxy=edge", "--hostname-strict-https=true" })
     public void testUseDefaultPortsAndHttpsSchemeWhenProxyIsSetAndStrictHttpsEnabled() {
-        assertFrontEndUrl("http://mykeycloak.127.0.0.1.nip.io:8080", "https://mykeycloak.127.0.0.1.nip.io/");
+        assertFrontEndUrl("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080", "https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io" })
     public void testBackEndUrlFromRequest() {
         assertBackEndUrl("http://localhost:8080", "http://localhost:8080/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--hostname-strict-backchannel=true" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--hostname-strict-backchannel=true" })
     public void testBackEndUrlSameAsFrontEndUrl() {
-        assertBackEndUrl("http://localhost:8080", "http://mykeycloak.127.0.0.1.nip.io:8080/");
+        assertBackEndUrl("http://localhost:8080", "http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--hostname-path=/auth", "--hostname-strict=true", "--hostname-strict-backchannel=true" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--hostname-path=/auth", "--hostname-strict=true", "--hostname-strict-backchannel=true" })
     public void testSetHostnamePath() {
-        assertFrontEndUrl("http://localhost:8080", "http://mykeycloak.127.0.0.1.nip.io:8080/auth/");
-        assertBackEndUrl("http://localhost:8080", "http://mykeycloak.127.0.0.1.nip.io:8080/auth/");
+        assertFrontEndUrl("http://localhost:8080", "http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080/auth/");
+        assertBackEndUrl("http://localhost:8080", "http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080/auth/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--https-port=8543", "--hostname-strict-https=true" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--https-port=8543", "--hostname-strict-https=true" })
     public void testDefaultTlsPortChangeWhenHttpPortSet() {
-        assertFrontEndUrl("http://mykeycloak.127.0.0.1.nip.io:8080", "https://mykeycloak.127.0.0.1.nip.io:8543/");
+        assertFrontEndUrl("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080", "https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8543/");
     }
 
     @Test
-    @Launch({ "start-dev", "--hostname=mykeycloak.127.0.0.1.nip.io", "--hostname-strict-https=true", "--hostname-port=8543" })
+    @Launch({ "start-dev", "--hostname=mykeycloak.0-0-0-0-0-0-0-1.sslip.io", "--hostname-strict-https=true", "--hostname-port=8543" })
     public void testWelcomePageAdminUrl() {
-        Assert.assertTrue(when().get("http://mykeycloak.127.0.0.1.nip.io:8080").asString().contains("http://mykeycloak.127.0.0.1.nip.io:8080/admin/"));
-        Assert.assertTrue(when().get("https://mykeycloak.127.0.0.1.nip.io:8443").asString().contains("https://mykeycloak.127.0.0.1.nip.io:8443/admin/"));
+        Assert.assertTrue(when().get("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080").asString().contains("http://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8080/admin/"));
+        Assert.assertTrue(when().get("https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443").asString().contains("https://mykeycloak.0-0-0-0-0-0-0-1.sslip.io:8443/admin/"));
         Assert.assertTrue(when().get("http://localhost:8080").asString().contains("http://localhost:8080/admin/"));
         Assert.assertTrue(when().get("https://localhost:8443").asString().contains("https://localhost:8443/admin/"));
     }
