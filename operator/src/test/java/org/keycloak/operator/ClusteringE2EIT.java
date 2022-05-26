@@ -177,7 +177,11 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
         // This is to test passing through the "Service", not 100% deterministic, but a smoke test that things are working as expected
         // Executed here to avoid paying the setup time again
         var service = new KeycloakService(k8sclient, kc);
-        Awaitility.await().atMost(5, MINUTES).ignoreExceptions().untilAsserted(() -> {
+        Awaitility.await()
+                .atMost(20, MINUTES)
+                .pollDelay(5, SECONDS)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
             String token2 = null;
             // Obtaining the token from the first pod
             // Connecting using port-forward and a fixed port to respect the instance issuer used hostname
