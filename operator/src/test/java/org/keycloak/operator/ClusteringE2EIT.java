@@ -123,7 +123,7 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
 
         Log.info("Testing the Keycloak Cluster");
         Awaitility.await()
-                .atMost(10, MINUTES)
+                .atMost(20, MINUTES)
                 .pollDelay(5, SECONDS)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
