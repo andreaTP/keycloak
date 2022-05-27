@@ -184,8 +184,7 @@ public class ClusteringE2EIT extends ClusterOperatorTest {
                 .untilAsserted(() -> {
             String token2 = null;
             // Obtaining the token from the first pod
-            // Connecting using port-forward and a fixed port to respect the instance issuer used hostname
-            for (int i = 0; i < (targetInstances * 2); i++) {
+            for (int i = 0; i < (targetInstances + 1); i++) {
 
                 if (token2 == null) {
                     var tokenUrl = "https://" + service.getName() + "." + namespace + ":" + Constants.KEYCLOAK_HTTPS_PORT + "/realms/token-test/protocol/openid-connect/token";
