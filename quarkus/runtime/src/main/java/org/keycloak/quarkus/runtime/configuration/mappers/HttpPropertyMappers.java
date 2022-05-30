@@ -1,5 +1,6 @@
 package org.keycloak.quarkus.runtime.configuration.mappers;
 
+import com.google.common.collect.Maps;
 import io.smallrye.config.ConfigSourceInterceptorContext;
 import io.smallrye.config.ConfigValue;
 import org.keycloak.config.HttpOptions;
@@ -12,6 +13,7 @@ import org.keycloak.quarkus.runtime.configuration.MicroProfileConfigProvider;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.function.BiFunction;
 
 import static org.keycloak.quarkus.runtime.configuration.mappers.PropertyMapper.fromOption;
 import static org.keycloak.quarkus.runtime.configuration.mappers.PropertyMappers.getMapper;
@@ -25,7 +27,7 @@ final class HttpPropertyMappers {
         return new PropertyMapper[] {
                 fromOption(HttpOptions.httpEnabled)
                         .to("quarkus.http.insecure-requests")
-                        .transformer(HttpPropertyMappers::getHttpEnabledTransformer)
+                        .transformer(HttpEnabledTransformer)
                         .paramLabel(Boolean.TRUE + "|" + Boolean.FALSE)
                         .build(),
                 fromOption(HttpOptions.httpHost)
@@ -96,6 +98,10 @@ final class HttpPropertyMappers {
         };
     }
 
+    // TODO: the typechecker was tripping with the original signature
+    private static BiFunction<String, ConfigSourceInterceptorContext, String> HttpEnabledTransformer =
+            (String value, ConfigSourceInterceptorContext context) -> getHttpEnabledTransformer(value, context);
+
     private static String getHttpEnabledTransformer(String value, ConfigSourceInterceptorContext context) {
         boolean enabled = Boolean.parseBoolean(value);
         ConfigValue proxy = context.proceed(MicroProfileConfigProvider.NS_KEYCLOAK_PREFIX + "proxy");
@@ -133,7 +139,5 @@ final class HttpPropertyMappers {
 
         return null;
     }
-
-    private static <T> PropertyMapper.Builder<T> builder() { return PropertyMapper.<T> builder(OptionCategory.HTTP); }
 }
 

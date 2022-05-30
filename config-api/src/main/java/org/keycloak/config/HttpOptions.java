@@ -45,6 +45,7 @@ public class HttpOptions {
         required
     }
 
+    // TODO: testme from command line
     public final static Option httpsClientAuth = new OptionBuilder<>("https-client-auth", ClientAuth.class)
             .category(OptionCategory.HTTP)
             .description("Configures the server to require/request client authentication. Possible Values: none, request, required.")
@@ -103,6 +104,21 @@ public class HttpOptions {
     public final static List<Option<?>> ALL_OPTIONS = new ArrayList<>();
 
     static {
+        ALL_OPTIONS.add(httpEnabled);
+        ALL_OPTIONS.add(httpHost);
+        ALL_OPTIONS.add(httpRelativePath);
         ALL_OPTIONS.add(httpPort);
+        ALL_OPTIONS.add(httpsPort);
+        ALL_OPTIONS.add(httpsClientAuth);
+        ALL_OPTIONS.add(httpsCipherSuites);
+        ALL_OPTIONS.add(httpsProtocols);
+        ALL_OPTIONS.add(httpsCertificateFile);
+        ALL_OPTIONS.add(httpsCertificateKeyFile);
+        ALL_OPTIONS.add(httpsKeyStoreFile);
+        ALL_OPTIONS.add(httpsKeyStorePassword);
+        ALL_OPTIONS.add(httpsKeyStoreType);
+        ALL_OPTIONS.add(httpsTrustStoreFile);
+        ALL_OPTIONS.add(httpsTrustStorePassword);
+        ALL_OPTIONS.add(httpsTrustStoreType);
     }
 }

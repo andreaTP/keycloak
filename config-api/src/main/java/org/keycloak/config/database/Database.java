@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.keycloak.quarkus.runtime.storage.database;
+package org.keycloak.config.database;
 
 import static java.util.Arrays.asList;
 
@@ -96,7 +96,7 @@ public final class Database {
         return DATABASES.keySet().stream().sorted().toArray(String[]::new);
     }
 
-    private enum Vendor {
+    public enum Vendor {
         H2("h2",
                 "org.h2.jdbcx.JdbcDataSource",
                 "org.h2.Driver",
