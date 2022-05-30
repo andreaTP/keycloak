@@ -23,100 +23,73 @@ final class HttpPropertyMappers {
 
     public static PropertyMapper[] getHttpPropertyMappers() {
         return new PropertyMapper[] {
-                builder().from("http-enabled")
+                fromOption(HttpOptions.httpEnabled)
                         .to("quarkus.http.insecure-requests")
-                        .defaultValue(Boolean.FALSE.toString())
                         .transformer(HttpPropertyMappers::getHttpEnabledTransformer)
-                        .description("Enables the HTTP listener.")
                         .paramLabel(Boolean.TRUE + "|" + Boolean.FALSE)
-                        .expectedValues(Arrays.asList(Boolean.TRUE.toString(), Boolean.FALSE.toString()))
                         .build(),
-                builder().from("http-host")
+                fromOption(HttpOptions.httpHost)
                         .to("quarkus.http.host")
                         .defaultValue("0.0.0.0")
-                        .description("The used HTTP Host.")
                         .paramLabel("host")
                         .build(),
-                builder().from("http-relative-path")
+                fromOption(HttpOptions.httpRelativePath)
                         .to("quarkus.http.root-path")
-                        .defaultValue("/")
-                        .description("Set the path relative to '/' for serving resources.")
                         .paramLabel("path")
-                        .isBuildTimeProperty(true)
                         .build(),
                 fromOption(HttpOptions.httpPort)
                         .to("quarkus.http.port")
                         .paramLabel("port")
                         .build(),
-                builder().from("https-port")
+                fromOption(HttpOptions.httpsPort)
                         .to("quarkus.http.ssl-port")
-                        .defaultValue(String.valueOf(8443))
-                        .description("The used HTTPS port.")
                         .paramLabel("port")
                         .build(),
-                builder().from("https-client-auth")
+                fromOption(HttpOptions.httpsClientAuth)
                         .to("quarkus.http.ssl.client-auth")
-                        .defaultValue("none")
-                        .description("Configures the server to require/request client authentication. Possible Values: none, request, required.")
                         .paramLabel("auth")
-                        .expectedValues(Arrays.asList("none", "request", "required"))
                         .build(),
-                builder().from("https-cipher-suites")
+                fromOption(HttpOptions.httpsCipherSuites)
                         .to("quarkus.http.ssl.cipher-suites")
-                        .description("The cipher suites to use. If none is given, a reasonable default is selected.")
                         .paramLabel("ciphers")
                         .build(),
-                builder().from("https-protocols")
+                fromOption(HttpOptions.httpsProtocols)
                         .to("quarkus.http.ssl.protocols")
-                        .description("The list of protocols to explicitly enable.")
                         .paramLabel("protocols")
-                        .defaultValue("TLSv1.3")
                         .build(),
-                builder().from("https-certificate-file")
+                fromOption(HttpOptions.httpsCertificateFile)
                         .to("quarkus.http.ssl.certificate.file")
-                        .description("The file path to a server certificate or certificate chain in PEM format.")
                         .paramLabel("file")
                         .build(),
-                builder().from("https-certificate-key-file")
+                fromOption(HttpOptions.httpsCertificateKeyFile)
                         .to("quarkus.http.ssl.certificate.key-file")
-                        .description("The file path to a private key in PEM format.")
                         .paramLabel("file")
                         .build(),
-                builder().from("https-key-store-file")
+                fromOption(HttpOptions.httpsKeyStoreFile)
                         .to("quarkus.http.ssl.certificate.key-store-file")
-                        .defaultValue(getDefaultKeystorePathValue())
-                        .description("The key store which holds the certificate information instead of specifying separate files.")
+                        .defaultValue(getDefaultKeystorePathValue()) // TODO: check
                         .paramLabel("file")
                         .build(),
-                builder().from("https-key-store-password")
+                fromOption(HttpOptions.httpsKeyStorePassword)
                         .to("quarkus.http.ssl.certificate.key-store-password")
-                        .description("The password of the key store file.")
-                        .defaultValue("password")
                         .paramLabel("password")
                         .isMasked(true)
                         .build(),
-                builder().from("https-key-store-type")
+                fromOption(HttpOptions.httpsKeyStoreType)
                         .to("quarkus.http.ssl.certificate.key-store-file-type")
-                        .description("The type of the key store file. " +
-                                "If not given, the type is automatically detected based on the file name.")
                         .paramLabel("type")
                         .build(),
-                builder().from("https-trust-store-file")
+                fromOption(HttpOptions.httpsTrustStoreFile)
                         .to("quarkus.http.ssl.certificate.trust-store-file")
-                        .description("The trust store which holds the certificate information of the certificates to trust.")
                         .paramLabel("file")
                         .build(),
-                builder().from("https-trust-store-password")
+                fromOption(HttpOptions.httpsTrustStorePassword)
                         .to("quarkus.http.ssl.certificate.trust-store-password")
-                        .description("The password of the trust store file.")
                         .paramLabel("password")
                         .isMasked(true)
                         .build(),
-                builder().from("https-trust-store-type")
+                fromOption(HttpOptions.httpsTrustStoreType)
                         .to("quarkus.http.ssl.certificate.trust-store-file-type")
-                        .defaultValue(getDefaultKeystorePathValue())
-                        .description("The type of the trust store file. " +
-                                "If not given, the type is automatically detected based on the file name.")
                         .paramLabel("type")
                         .build()
 
