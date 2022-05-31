@@ -14,5 +14,6 @@ public class AllOptions {
         ALL_OPTIONS.addAll(HealthOptions.ALL_OPTIONS);
         ALL_OPTIONS.addAll(HostnameOptions.ALL_OPTIONS);
         ALL_OPTIONS.addAll(HttpOptions.ALL_OPTIONS);
+        ALL_OPTIONS.addAll(LoggingOptions.ALL_OPTIONS);
     }
 }

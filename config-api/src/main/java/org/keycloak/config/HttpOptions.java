@@ -59,43 +59,52 @@ public class HttpOptions {
             .build();
 
     public final static Option httpsProtocols = new OptionBuilder<>("https-protocols", String.class)
+            .category(OptionCategory.HTTP)
             .description("The list of protocols to explicitly enable.")
             .defaultValue("TLSv1.3")
             .build();
 
     // TODO: testme, should it be a File?
     public final static Option httpsCertificateFile = new OptionBuilder<>("https-certificate-file", String.class)
+            .category(OptionCategory.HTTP)
             .description("The file path to a server certificate or certificate chain in PEM format.")
             .build();
 
     public final static Option httpsCertificateKeyFile = new OptionBuilder<>("https-certificate-key-file", String.class)
+            .category(OptionCategory.HTTP)
             .description("The file path to a private key in PEM format.")
             .build();
 
     public final static Option httpsKeyStoreFile = new OptionBuilder<>("https-key-store-file", String.class)
+            .category(OptionCategory.HTTP)
             .description("The key store which holds the certificate information instead of specifying separate files.")
             .defaultValue("~/conf/server.keystore") // TODO: verify
             .build();
 
     public final static Option httpsKeyStorePassword = new OptionBuilder<>("https-key-store-password", String.class)
+            .category(OptionCategory.HTTP)
             .description("The password of the key store file.")
             .defaultValue("password")
             .build();
 
     public final static Option httpsKeyStoreType = new OptionBuilder<>("https-key-store-type", String.class)
+            .category(OptionCategory.HTTP)
             .description("The type of the key store file. " +
                     "If not given, the type is automatically detected based on the file name.")
             .build();
 
     public final static Option httpsTrustStoreFile = new OptionBuilder<>("https-trust-store-file", String.class)
+            .category(OptionCategory.HTTP)
             .description("The trust store which holds the certificate information of the certificates to trust.")
             .build();
 
     public final static Option httpsTrustStorePassword = new OptionBuilder<>("https-trust-store-password", String.class)
+            .category(OptionCategory.HTTP)
             .description("The password of the trust store file.")
             .build();
 
     public final static Option httpsTrustStoreType = new OptionBuilder<>("https-trust-store-type", String.class)
+            .category(OptionCategory.HTTP)
             .description("The type of the trust store file. " +
                     "If not given, the type is automatically detected based on the file name.")
             .defaultValue("~/conf/server.keystore") // TODO: is this a bug in the current distribution?
