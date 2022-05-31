@@ -18,8 +18,4 @@ final class HealthPropertyMappers {
                         .build()
         };
     }
-
-    private static PropertyMapper.Builder builder() {
-        return PropertyMapper.builder(OptionCategory.HEALTH);
-    }
 }
