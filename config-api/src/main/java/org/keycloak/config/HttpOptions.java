@@ -107,7 +107,7 @@ public class HttpOptions {
             .category(OptionCategory.HTTP)
             .description("The type of the trust store file. " +
                     "If not given, the type is automatically detected based on the file name.")
-            .defaultValue("~/conf/server.keystore") // TODO: is this a bug in the current distribution?
+            // .defaultValue("~/conf/server.keystore") // TODO: is this a bug in the current distribution?
             .build();
 
     public final static List<Option<?>> ALL_OPTIONS = new ArrayList<>();

@@ -37,6 +37,7 @@ public class ClusteringOptions {
             .build();
 
     public final static Option cacheConfigFile = new OptionBuilder<>("cache-config-file", String.class)
+            .category(OptionCategory.CLUSTERING)
             .description("Defines the file from which cache configuration should be loaded from. "
                     + "The configuration file is relative to the 'conf/' directory.")
             .buildTime(true)

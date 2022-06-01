@@ -16,6 +16,7 @@ public class AllOptions {
         ALL_OPTIONS.addAll(HttpOptions.ALL_OPTIONS);
         ALL_OPTIONS.addAll(LoggingOptions.ALL_OPTIONS);
         ALL_OPTIONS.addAll(MetricsOptions.ALL_OPTIONS);
+        ALL_OPTIONS.addAll(ProxyOptions.ALL_OPTIONS);
         ALL_OPTIONS.addAll(TransactionOptions.ALL_OPTIONS);
         ALL_OPTIONS.addAll(VaultOptions.ALL_OPTIONS);
     }
