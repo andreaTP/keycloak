@@ -400,7 +400,7 @@ public final class Picocli {
                 String name = mapper.getCliFormat();
                 String description = mapper.getDescription();
 
-                if (description == null || cSpec.optionsMap().containsKey(name) || name.endsWith(OPTION_PART_SEPARATOR)) {
+                if (description == null || description.isEmpty() || cSpec.optionsMap().containsKey(name) || name.endsWith(OPTION_PART_SEPARATOR)) {
                     //when key is already added or has no description, don't add.
                     continue;
                 }
@@ -412,16 +412,11 @@ public final class Picocli {
                         .paramLabel(mapper.getParamLabel())
                         .completionCandidates(expectedValues)
                         .parameterConsumer(PropertyMapperParameterConsumer.INSTANCE)
+                        .type(mapper.getType())
                         .hidden(mapper.isHidden());
 
                 if (mapper.getDefaultValue().isPresent()) {
                     optBuilder.defaultValue(mapper.getDefaultValue().get().toString());
-                }
-
-                if (mapper.getType() != null) {
-                    optBuilder.type(mapper.getType());
-                } else {
-                    optBuilder.type(String.class);
                 }
 
                 argGroupBuilder.addArg(optBuilder.build());

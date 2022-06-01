@@ -5,9 +5,11 @@ import io.smallrye.config.ConfigSourceInterceptorContext;
 import java.util.Arrays;
 import java.util.function.BiFunction;
 
+import static org.keycloak.quarkus.runtime.configuration.mappers.PropertyMapper.fromOption;
 import static org.keycloak.quarkus.runtime.integration.QuarkusPlatform.addInitializationException;
 
 import org.keycloak.config.OptionCategory;
+import org.keycloak.config.ProxyOptions;
 import org.keycloak.quarkus.runtime.Messages;
 
 final class ProxyPropertyMappers {
@@ -18,21 +20,15 @@ final class ProxyPropertyMappers {
 
     public static PropertyMapper[] getProxyPropertyMappers() {
         return new PropertyMapper[] {
-                builder().from("proxy")
+                fromOption(ProxyOptions.proxy)
                         .to("quarkus.http.proxy.proxy-address-forwarding")
-                        .defaultValue("none")
                         .transformer(getValidProxyModeValue())
-                        .expectedValues(Arrays.asList(possibleProxyValues))
-                        .description("The proxy address forwarding mode if the server is behind a reverse proxy. " +
-                                "Possible values are: " + String.join(",",possibleProxyValues))
                         .paramLabel("mode")
-                        .category(OptionCategory.PROXY)
                         .build(),
-                builder().to("quarkus.http.proxy.enable-forwarded-host")
+                fromOption(ProxyOptions.proxyForwardedHost)
+                        .to("quarkus.http.proxy.enable-forwarded-host")
                         .mapFrom("proxy")
-                        .defaultValue("false")
-                        .transformer(ProxyPropertyMappers::resolveEnableForwardedHost)
-                        .category(OptionCategory.PROXY)
+                        .transformer(resolveEnableForwardedHost)
                         .build()
         };
     }
@@ -53,11 +49,10 @@ final class ProxyPropertyMappers {
         };
     }
 
-    private static String resolveEnableForwardedHost(String proxy, ConfigSourceInterceptorContext context) {
-        return String.valueOf(!"none".equals(proxy));
-    }
+    private static BiFunction<String, ConfigSourceInterceptorContext, String> resolveEnableForwardedHost =
+            (s, c) -> getEnableForwardedHost(s, c);
 
-    private static <T> PropertyMapper.Builder<T> builder() {
-        return PropertyMapper.builder(OptionCategory.PROXY);
+    private static String getEnableForwardedHost(String proxy, ConfigSourceInterceptorContext context) {
+        return String.valueOf(!"none".equals(proxy));
     }
 }

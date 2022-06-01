@@ -27,6 +27,37 @@ public final class LoggingPropertyMappers {
                 fromOption(LoggingOptions.log)
                         .paramLabel("<handler>")
                         .build(),
+                fromOption(LoggingOptions.logConsoleOutput)
+                        .to("quarkus.log.console.json")
+                        .paramLabel("default|json")
+                        .build(),
+                fromOption(LoggingOptions.logConsoleFormat)
+                        .to("quarkus.log.console.format")
+                        .paramLabel("format")
+                        .build(),
+                fromOption(LoggingOptions.logConsoleColor)
+                        .to("quarkus.log.console.color")
+                        .paramLabel(Boolean.TRUE + "|" + Boolean.FALSE)
+                        .build(),
+                fromOption(LoggingOptions.logConsoleEnabled)
+                        .mapFrom("log")
+                        .to("quarkus.log.console.enable")
+                        .transformer(resolveLogHandler(LoggingOptions.DEFAULT_LOG_HANDLER.name()))
+                        .build(),
+                fromOption(LoggingOptions.logFileEnabled)
+                        .mapFrom("log")
+                        .to("quarkus.log.file.enable")
+                        .transformer(resolveLogHandler("file"))
+                        .build(),
+                fromOption(LoggingOptions.logFile)
+                        .to("quarkus.log.file.path")
+                        .paramLabel("<path>/<file-name>.log")
+                        .transformer(resolveFileLogLocation)
+                        .build(),
+                fromOption(LoggingOptions.logFileFormat)
+                        .to("quarkus.log.file.format")
+                        .paramLabel("<format>")
+                        .build(),
                 fromOption(LoggingOptions.logLevel)
                         .to("quarkus.log.level")
                         .transformer(new BiFunction<String, ConfigSourceInterceptorContext, String>() {
@@ -69,37 +100,6 @@ public final class LoggingPropertyMappers {
                             }
                         })
                         .paramLabel("category:level")
-                        .build(),
-                fromOption(LoggingOptions.logConsoleOutput)
-                        .to("quarkus.log.console.json")
-                        .paramLabel("default|json")
-                        .build(),
-                fromOption(LoggingOptions.logConsoleFormat)
-                        .to("quarkus.log.console.format")
-                        .paramLabel("format")
-                        .build(),
-                fromOption(LoggingOptions.logConsoleColor)
-                        .to("quarkus.log.console.color")
-                        .paramLabel(Boolean.TRUE + "|" + Boolean.FALSE)
-                        .build(),
-                fromOption(LoggingOptions.logConsoleEnabled)
-                        .mapFrom("log")
-                        .to("quarkus.log.console.enable")
-                        .transformer(resolveLogHandler(LoggingOptions.DEFAULT_LOG_HANDLER.name()))
-                        .build(),
-                fromOption(LoggingOptions.logFileEnabled)
-                        .mapFrom("log")
-                        .to("quarkus.log.file.enable")
-                        .transformer(resolveLogHandler("file"))
-                        .build(),
-                fromOption(LoggingOptions.logFile)
-                        .to("quarkus.log.file.path")
-                        .paramLabel("<path>/<file-name>.log")
-                        .transformer(resolveFileLogLocation)
-                        .build(),
-                fromOption(LoggingOptions.logFileFormat)
-                        .to("quarkus.log.file.format")
-                        .paramLabel("<format>")
                         .build()
         };
     }

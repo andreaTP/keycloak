@@ -92,6 +92,7 @@ final class HttpPropertyMappers {
                         .build(),
                 fromOption(HttpOptions.httpsTrustStoreType)
                         .to("quarkus.http.ssl.certificate.trust-store-file-type")
+                        .defaultValue(getDefaultKeystorePathValue()) // TODO: Check that we are rewriting the default value
                         .paramLabel("type")
                         .build()
 
