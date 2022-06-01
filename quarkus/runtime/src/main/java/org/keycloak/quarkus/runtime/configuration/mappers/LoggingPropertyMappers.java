@@ -20,13 +20,6 @@ import io.smallrye.config.ConfigSourceInterceptorContext;
 
 public final class LoggingPropertyMappers {
 
-//    private static final String DEFAULT_LOG_LEVEL = "info";
-//    private static final String DEFAULT_LOG_HANDLER = "console";
-//    private static final String DEFAULT_LOG_FILENAME = "keycloak.log";
-//    public static final String DEFAULT_LOG_PATH = "data" + File.separator + "log" + File.separator + DEFAULT_LOG_FILENAME;
-//    private static final List<String> AVAILABLE_LOG_HANDLERS = List.of(DEFAULT_LOG_HANDLER,"file");
-//    private static final String DEFAULT_CONSOLE_OUTPUT = "default";
-
     private LoggingPropertyMappers(){}
 
     public static PropertyMapper[] getMappers() {
