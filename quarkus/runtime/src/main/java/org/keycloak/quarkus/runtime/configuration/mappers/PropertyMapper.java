@@ -53,7 +53,7 @@ public class PropertyMapper<T> {
     private final BiFunction<String, ConfigSourceInterceptorContext, String> mapper;
     private final String mapFrom;
     private final boolean mask;
-    private final List<T> expectedValues;
+    private final List<T> expectedValues; // TODO: clean-up
     private final String paramLabel;
     private final String envVarFormat;
     private String cliFormat;
@@ -225,6 +225,7 @@ public class PropertyMapper<T> {
 
     public static class Builder<T> {
 
+        // TODO: cleanup!
         private Class<T> type;
         private String from;
         private String to;
