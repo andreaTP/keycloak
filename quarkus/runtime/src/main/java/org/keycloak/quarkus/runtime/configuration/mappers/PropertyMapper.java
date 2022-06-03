@@ -158,6 +158,8 @@ public class PropertyMapper<T> {
         return value;
     }
 
+    public Option<T> getOption() { return this.option; }
+
     public Class<T> getType() { return this.option.getType(); }
 
     public String getFrom() {
