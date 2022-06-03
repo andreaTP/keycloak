@@ -35,7 +35,7 @@ import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.configuration.ProfileManager;
 import org.apache.commons.lang3.SystemUtils;
 
-public final class Environment {
+public final class Environment extends org.keycloak.config.Environment {
 
     public static final String IMPORT_EXPORT_MODE = "import_export";
     public static final String PROFILE ="kc.profile";
@@ -53,10 +53,6 @@ public final class Environment {
 
     public static Boolean isRuntimeMode() {
         return !isRebuild();
-    }
-
-    public static String getHomeDir() {
-        return System.getProperty("kc.home.dir");
     }
 
     public static Path getHomePath() {
