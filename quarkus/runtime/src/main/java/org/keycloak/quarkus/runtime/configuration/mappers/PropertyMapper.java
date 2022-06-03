@@ -54,7 +54,6 @@ public class PropertyMapper<T> {
     private final BiFunction<String, ConfigSourceInterceptorContext, String> mapper;
     private final String mapFrom;
     private final boolean mask;
-    private final List<T> expectedValues;
     private final String paramLabel;
     private final String envVarFormat;
     private String cliFormat;
@@ -80,7 +79,6 @@ public class PropertyMapper<T> {
         this.mapFrom = mapFrom;
         this.paramLabel = paramLabel;
         this.mask = mask;
-        this.expectedValues = expectedValues == null ? Collections.emptyList() : expectedValues;
         this.cliFormat = toCliFormat(from);
         this.envVarFormat = toEnvVarFormat(option.getKey());
     }
@@ -168,8 +166,8 @@ public class PropertyMapper<T> {
 
     public String getDescription() { return this.option.getDescription(); }
 
-    public List<T> getExpectedValues() {
-        return expectedValues;
+    public List<String> getExpectedValues() {
+        return this.option.getExpectedValues().stream().map(v -> v.toString()).collect(Collectors.toList());
     }
 
     public Optional<T> getDefaultValue() {return this.option.getDefaultValue(); }
